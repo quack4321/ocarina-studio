@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <!-- html2canvas for Crisp DOM-to-Image / PDF Rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- jsPDF for Vector Client-Side PDF Generation -->
@@ -28,7 +28,7 @@
       --accent-blue: #3b82f6;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      
+
       /* Nintendo Switch 2 Controller Color Palette */
       --btn-l: #64748b;
       --btn-r: #64748b;
@@ -119,10 +119,11 @@
 
     /* Action Buttons */
     .btn-row { display: flex; gap: 8px; }
-    button {
+    button, .file-btn-label {
       flex: 1; padding: 11px 14px; font-size: 13px; font-weight: 600; border: none;
       border-radius: 8px; cursor: pointer; transition: all 0.15s ease; display: flex;
-      align-items: center; justify-content: center; gap: 6px;
+      align-items: center; justify-content: center; gap: 6px; text-decoration: none;
+      box-sizing: border-box; user-select: none;
     }
     .btn-primary { background: #2563eb; color: #fff; }
     .btn-primary:hover { background: #1d4ed8; }
@@ -132,9 +133,11 @@
     .btn-secondary:hover { background: #384666; }
     .btn-success { background: #059669; color: #fff; }
     .btn-success:hover { background: #047857; }
-    .btn-preset { background: #1e293b; color: #94a3b8; font-size: 11px; padding: 5px 8px; border-radius: 6px; }
+    .btn-gold { background: #92400e; color: #fef08a; border: 1px solid #b45309; }
+    .btn-gold:hover { background: #b45309; color: #fff; }
+    .btn-preset { background: #1e293b; color: #94a3b8; font-size: 11px; padding: 5px 8px; border-radius: 6px; flex: none; }
     .btn-preset:hover { background: #334155; color: #fff; }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button:disabled, .file-btn-label.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
     /* Non-Musician Tablature Display */
     .sheet-container {
@@ -215,9 +218,7 @@
       margin-right: 6px;
     }
 
-    /* ==========================================================================
-       MODAL STYLES (Sheet Music Big Preview & Multi-Format Exports)
-       ========================================================================== */
+    /* Modal Styles */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -282,9 +283,7 @@
     .combo-text { font-weight: 700; color: var(--gold-highlight); text-align: center; line-height: 1.2; }
     .combo-text.natural-text { color: #64748b; font-weight: 500; font-style: italic; }
 
-    /* ==========================================================================
-       BEAUTIFUL HTML SHEET MUSIC PAPER (Rendered inside Modal & Captured)
-       ========================================================================== */
+    /* Printable HTML Sheet Music Paper */
     .printable-sheet {
       width: 740px;
       min-height: 520px;
@@ -332,8 +331,7 @@
       gap: 5px;
     }
     .sheet-legend b { color: #0f172a; }
-    
-    /* Dynamic Grid that centers and sizes cards nicely whether there are 2 or 32 notes */
+
     .sheet-grid {
       display: flex;
       flex-wrap: wrap;
@@ -530,13 +528,29 @@
       </div>
 
       <div class="btn-row">
-        <!-- OPENS BIG DISPLAY MODAL INSTEAD OF FORCING DOWNLOAD -->
         <button id="btn-open-preview" class="btn-secondary" onclick="openExportModal()" disabled>
           👁 View &amp; Export Sheet
         </button>
         <button class="btn-secondary" onclick="clearSong()">
           ✕ Clear
         </button>
+      </div>
+
+      <!-- NEW: Direct Export & Import Row -->
+      <div class="btn-row">
+        <button id="btn-export-midi" class="btn-secondary" onclick="exportMidiSong()" disabled title="Download song as a playable Standard MIDI (.mid) file">
+          🎹 Export MIDI
+        </button>
+        <button id="btn-export-txt" class="btn-secondary" onclick="exportTxtSong()" disabled title="Download song notes as a .txt ocarina notation file">
+          💾 Export TXT
+        </button>
+      </div>
+
+      <div class="btn-row">
+        <label class="file-btn-label btn-gold" title="Load an existing MIDI (.mid) or Text (.txt) file into the sequence">
+          📂 Import Song (.mid / .txt)
+          <input type="file" id="file-import-input" accept=".mid,.midi,.txt" style="display:none;" onchange="handleFileImport(event)">
+        </label>
       </div>
 
       <h2>Type / Paste Song Notes</h2>
@@ -557,6 +571,7 @@
           <button class="btn-preset" onclick="setPreset('SongOfStorms')">Song of Storms</button>
           <button class="btn-preset" onclick="setPreset('SongOfTime')">Song of Time</button>
           <button class="btn-preset" onclick="setPreset('Epona')">Epona's Song</button>
+          <button class="btn-preset" onclick="setPreset('WizardsInWinter')">Wizards in Winter</button>
         </div>
       </div>
     </div>
@@ -566,11 +581,11 @@
   <div class="panel">
     <h2>Non-Musician Controller Sheet Music (Visual Action Sequence)</h2>
     <div id="sheet-music" class="sheet-container">
-      <div class="sheet-empty">No notes recorded yet. Play notes with your controller or load from text!</div>
+      <div class="sheet-empty">No notes recorded yet. Play notes with your controller, load from text, or import a .mid file!</div>
     </div>
   </div>
 
-  <!-- 2. EXPANDED CHROMATIC FINGERING GUIDE (Positioned BELOW the visuals box with NO inner scrollbar) -->
+  <!-- 2. EXPANDED CHROMATIC FINGERING GUIDE -->
   <div class="panel">
     <h2>Chromatic Fingering &amp; Note Guide (Click Row to Play &amp; Test)</h2>
     <div class="chart-container">
@@ -646,25 +661,25 @@ function midiToFreq(midi) {
 }
 
 const CHROMATIC_GUIDE = [
-  { pitch: "B3", midi: 59, btn: "L", mod: "Stick Down (Full) + D-Pad Down", alt: "---", sY: 1.0, dpad: -1 },
-  { pitch: "C4", midi: 60, btn: "L", mod: "Stick Down (Full)", alt: "---", sY: 1.0, dpad: 0 },
-  { pitch: "C#4 / Db4", midi: 61, btn: "L", mod: "D-Pad Down", alt: "---", sY: 0, dpad: -1 },
-  { pitch: "D4", midi: 62, btn: "L", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
-  { pitch: "D#4 / Eb4", midi: 63, btn: "L", mod: "D-Pad Up", alt: "R + Stick Down (Full)", sY: 0, dpad: 1 },
-  { pitch: "E4", midi: 64, btn: "R", mod: "D-Pad Down", alt: "L + Stick Up (Full)", sY: 0, dpad: -1 },
-  { pitch: "F4", midi: 65, btn: "R", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
-  { pitch: "F#4 / Gb4", midi: 66, btn: "R", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1 },
-  { pitch: "G4", midi: 67, btn: "R", mod: "Stick Up (Full)", alt: "A + Stick Down (Full)", sY: -1.0, dpad: 0 },
-  { pitch: "G#4 / Ab4", midi: 68, btn: "A", mod: "D-Pad Down", alt: "R + Stick Up (Full) + D-Pad Up", sY: 0, dpad: -1 },
-  { pitch: "A4", midi: 69, btn: "A", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
-  { pitch: "A#4 / Bb4", midi: 70, btn: "A", mod: "D-Pad Up", alt: "Y + D-Pad Down", sY: 0, dpad: 1 },
-  { pitch: "B4", midi: 71, btn: "Y", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
-  { pitch: "C5", midi: 72, btn: "Y", mod: "D-Pad Up", alt: "X + Stick Down (Full)", sY: 0, dpad: 1 },
-  { pitch: "C#5 / Db5", midi: 73, btn: "X", mod: "D-Pad Down", alt: "Y + Stick Up (Full)", sY: 0, dpad: -1 },
-  { pitch: "D5", midi: 74, btn: "X", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
-  { pitch: "D#5 / Eb5", midi: 75, btn: "X", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1 },
-  { pitch: "E5", midi: 76, btn: "X", mod: "Stick Up (Full)", alt: "---", sY: -1.0, dpad: 0 },
-  { pitch: "F5", midi: 77, btn: "X", mod: "Stick Up (Full) + D-Pad Up", alt: "---", sY: -1.0, dpad: 1 }
+  { pitch: "B3", midi: 59, btn: "L", mod: "Stick Down (Full) + D-Pad Down", alt: "---", sY: 1.0, dpad: -1, stickDir: "down-full" },
+  { pitch: "C4", midi: 60, btn: "L", mod: "Stick Down (Full)", alt: "---", sY: 1.0, dpad: 0, stickDir: "down-full" },
+  { pitch: "C#4 / Db4", midi: 61, btn: "L", mod: "D-Pad Down", alt: "---", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "D4", midi: 62, btn: "L", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "D#4 / Eb4", midi: 63, btn: "L", mod: "D-Pad Up", alt: "R + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "E4", midi: 64, btn: "R", mod: "D-Pad Down", alt: "L + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "F4", midi: 65, btn: "R", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "F#4 / Gb4", midi: 66, btn: "R", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "G4", midi: 67, btn: "R", mod: "Stick Up (Full)", alt: "A + Stick Down (Full)", sY: -1.0, dpad: 0, stickDir: "up-full" },
+  { pitch: "G#4 / Ab4", midi: 68, btn: "A", mod: "D-Pad Down", alt: "R + Stick Up (Full) + D-Pad Up", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "A4", midi: 69, btn: "A", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "A#4 / Bb4", midi: 70, btn: "A", mod: "D-Pad Up", alt: "Y + D-Pad Down", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "B4", midi: 71, btn: "Y", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "C5", midi: 72, btn: "Y", mod: "D-Pad Up", alt: "X + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "C#5 / Db5", midi: 73, btn: "X", mod: "D-Pad Down", alt: "Y + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "D5", midi: 74, btn: "X", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "D#5 / Eb5", midi: 75, btn: "X", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "E5", midi: 76, btn: "X", mod: "Stick Up (Full)", alt: "---", sY: -1.0, dpad: 0, stickDir: "up-full" },
+  { pitch: "F5", midi: 77, btn: "X", mod: "Stick Up (Full) + D-Pad Up", alt: "---", sY: -1.0, dpad: 1, stickDir: "up-full" }
 ];
 
 function getDpadSvg(direction = 'up', size = 22) {
@@ -1004,6 +1019,16 @@ function setupMouseControls() {
 }
 setupMouseControls();
 
+function updateSessionButtons() {
+  const hasNotes = recordedEvents.length > 0;
+  document.getElementById('btn-play').disabled = !hasNotes || isRecording || isPlaying;
+  document.getElementById('btn-open-preview').disabled = !hasNotes || isRecording;
+  const btnExpMidi = document.getElementById('btn-export-midi');
+  const btnExpTxt = document.getElementById('btn-export-txt');
+  if (btnExpMidi) btnExpMidi.disabled = !hasNotes || isRecording;
+  if (btnExpTxt) btnExpTxt.disabled = !hasNotes || isRecording;
+}
+
 function pollInput() {
   if (isPlaying) {
     requestAnimationFrame(pollInput);
@@ -1143,6 +1168,7 @@ function commitActiveNote() {
     activeRecordedNote.duration = Math.max(0.12, nowSec - activeRecordedNote.startTime);
     recordedEvents.push(activeRecordedNote);
     renderSheetMusic();
+    updateSessionButtons();
     activeRecordedNote = null;
   }
 }
@@ -1203,7 +1229,6 @@ function loadFromTextInput() {
     if (!match) return;
     const btn = match[1];
 
-    // Strip 'VIB' first so 'B' isn't misread as D-Pad Down
     let hasVib = false;
     if (tok.includes('~') || tok.includes('VIB')) {
       hasVib = true;
@@ -1266,8 +1291,7 @@ function loadFromTextInput() {
   if (parsed.length > 0) {
     recordedEvents = parsed;
     renderSheetMusic();
-    document.getElementById('btn-play').disabled = false;
-    document.getElementById('btn-open-preview').disabled = false;
+    updateSessionButtons();
   }
 }
 
@@ -1276,7 +1300,8 @@ function setPreset(name) {
     'ZeldasLullaby': "Y, X, A, Y, X, A",
     'SongOfStorms':  "L, R, X, L, R, X",
     'SongOfTime':    "A, L, R, A, L, R",
-    'Epona':         "X, Y, A, X, Y, A"
+    'Epona':         "X, Y, A, X, Y, A",
+    'WizardsInWinter': "A, X, A+#, X, A, X, R+^^, X, R, X, R+b, X, L+b, X, R+b, X"
   };
   if (presets[name]) {
     document.getElementById('text-notes-input').value = presets[name];
@@ -1298,16 +1323,14 @@ function toggleRecord() {
     recordStartTime = performance.now();
     btn.innerHTML = `<span style="font-size:15px;">■</span> Stop Recording`;
     btn.className = "btn-danger";
-    document.getElementById('btn-play').disabled = true;
-    document.getElementById('btn-open-preview').disabled = true;
+    updateSessionButtons();
     renderSheetMusic();
   } else {
     isRecording = false;
     commitActiveNote();
     btn.innerHTML = `<span style="font-size:15px;">&bull;</span> Record Live`;
     btn.className = "btn-danger";
-    document.getElementById('btn-play').disabled = recordedEvents.length === 0;
-    document.getElementById('btn-open-preview').disabled = recordedEvents.length === 0;
+    updateSessionButtons();
   }
 }
 
@@ -1316,8 +1339,8 @@ function clearSong() {
   recordedEvents = [];
   activeRecordedNote = null;
   document.getElementById('clock').innerText = "00:00.0";
-  document.getElementById('btn-play').disabled = true;
-  document.getElementById('btn-open-preview').disabled = true;
+  document.getElementById('text-notes-input').value = "";
+  updateSessionButtons();
   renderSheetMusic();
 }
 
@@ -1326,6 +1349,7 @@ async function playSong() {
   isPlaying = true;
   document.getElementById('btn-play').disabled = true;
   document.getElementById('btn-record').disabled = true;
+  updateSessionButtons();
 
   let playheadTime = 0;
 
@@ -1364,8 +1388,8 @@ async function playSong() {
   document.getElementById('mon-detune').innerText = "0 cents";
   document.getElementById('mon-expr').innerText = "None";
   isPlaying = false;
-  document.getElementById('btn-play').disabled = false;
   document.getElementById('btn-record').disabled = false;
+  updateSessionButtons();
 }
 
 function buildModifierIconsHtml(n, iconPx) {
@@ -1383,7 +1407,7 @@ function buildModifierIconsHtml(n, iconPx) {
 function renderSheetMusic() {
   const container = document.getElementById('sheet-music');
   if (recordedEvents.length === 0) {
-    container.innerHTML = `<div class="sheet-empty">No notes recorded yet. Play notes with your controller or load from text!</div>`;
+    container.innerHTML = `<div class="sheet-empty">No notes recorded yet. Play notes with your controller, load from text, or import a .mid file!</div>`;
     return;
   }
 
@@ -1422,14 +1446,13 @@ function renderSheetMusic() {
 
 /**
  * ==============================================================================
- * MODULE 6: BEAUTIFUL HTML SHEET GENERATOR & HTML2CANVAS EXPORTER
+ * MODULE 6: BEAUTIFUL HTML SHEET GENERATOR & EXPORTER
  * ==============================================================================
  */
 function renderPrintableHTMLSheet() {
   const sheet = document.getElementById('printable-sheet');
   const count = recordedEvents.length;
 
-  // Choose visual size tier based on how many notes are in the song
   let tierClass = 'tier-sm';
   let iconPx = 22;
   if (count <= 4) { tierClass = 'tier-xl'; iconPx = 38; }
@@ -1539,6 +1562,329 @@ async function exportPDF() {
 
   pdf.addImage(imgData, 'PNG', xOffset, margin, renderW, renderH);
   pdf.save("ocarina_action_sheet.pdf");
+}
+
+/**
+ * ==============================================================================
+ * MODULE 7: FULL IMPORT & EXPORT SUBSYSTEM (MIDI & TXT)
+ * ==============================================================================
+ */
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2500);
+}
+
+// Convert event object to Ocarina Studio text token
+function eventToTextToken(ev) {
+  let tok = ev.button;
+  if (ev.dpad === 1) tok += "+#";
+  else if (ev.dpad === -1) tok += "+b";
+
+  if (ev.stickDir === 'up-full') tok += "+^^";
+  else if (ev.stickDir === 'up-half') tok += "+^";
+  else if (ev.stickDir === 'down-full') tok += "+vv";
+  else if (ev.stickDir === 'down-half') tok += "+v";
+
+  if (ev.hasVibrato) tok += "+~";
+  return tok;
+}
+
+// 1. Export as Text (.txt)
+function exportTxtSong() {
+  if (recordedEvents.length === 0) return;
+  const textContent = recordedEvents.map(eventToTextToken).join(", ");
+  const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+  downloadBlob(blob, "ocarina_song.txt");
+}
+
+// 2. Export as Standard MIDI File Type 0 (.mid)
+function encodeVLQ(val) {
+  val = Math.max(0, Math.round(val));
+  let bytes = [val & 0x7F];
+  val >>= 7;
+  while (val > 0) {
+    bytes.unshift((val & 0x7F) | 0x80);
+    val >>= 7;
+  }
+  return bytes;
+}
+
+function generateMidiBlob(events) {
+  const ticksPerBeat = 480;
+  const ticksPerSec = 960; // 120 BPM standard
+
+  let rawEvents = [];
+  events.forEach(n => {
+    rawEvents.push({ time: n.startTime, type: 0x90, midi: n.midi, vel: 90 });
+    rawEvents.push({ time: n.startTime + n.duration, type: 0x80, midi: n.midi, vel: 0 });
+  });
+  rawEvents.sort((a, b) => a.time === b.time ? a.type - b.type : a.time - b.time);
+
+  let trackBytes = [];
+  // Meta: Track Name "Ocarina"
+  const nameBytes = [0x4F, 0x63, 0x61, 0x72, 0x69, 0x6E, 0x61];
+  trackBytes.push(0x00, 0xFF, 0x03, nameBytes.length, ...nameBytes);
+
+  // Meta: Set Tempo 120 BPM (500,000 microseconds)
+  trackBytes.push(0x00, 0xFF, 0x51, 0x03, 0x07, 0xA1, 0x20);
+
+  // Program Change -> General MIDI 79 (Ocarina)
+  trackBytes.push(0x00, 0xC0, 79);
+
+  let lastTick = 0;
+  rawEvents.forEach(ev => {
+    let currentTick = Math.round(ev.time * ticksPerSec);
+    let delta = Math.max(0, currentTick - lastTick);
+    lastTick = currentTick;
+    trackBytes.push(...encodeVLQ(delta));
+    trackBytes.push(ev.type, ev.midi, ev.vel);
+  });
+
+  // End of Track
+  trackBytes.push(0x00, 0xFF, 0x2F, 0x00);
+
+  // MThd Header Chunk
+  let headerBytes = [
+    0x4D, 0x54, 0x68, 0x64, // 'MThd'
+    0x00, 0x00, 0x00, 0x06, // length: 6
+    0x00, 0x00,             // format 0
+    0x00, 0x01,             // 1 track
+    (ticksPerBeat >> 8) & 0xFF, ticksPerBeat & 0xFF // 480 division
+  ];
+
+  // MTrk Track Chunk
+  let trkLen = trackBytes.length;
+  let trkHeader = [
+    0x4D, 0x54, 0x72, 0x6B, // 'MTrk'
+    (trkLen >> 24) & 0xFF,
+    (trkLen >> 16) & 0xFF,
+    (trkLen >> 8) & 0xFF,
+    trkLen & 0xFF
+  ];
+
+  const fullBytes = new Uint8Array([...headerBytes, ...trkHeader, ...trackBytes]);
+  return new Blob([fullBytes], { type: 'audio/midi' });
+}
+
+function exportMidiSong() {
+  if (recordedEvents.length === 0) return;
+  const blob = generateMidiBlob(recordedEvents);
+  downloadBlob(blob, "ocarina_song.mid");
+}
+
+// 3. MIDI File Parser (.mid / .midi)
+function parseMidiFile(arrayBuffer) {
+  const data = new DataView(arrayBuffer);
+  let offset = 0;
+
+  function readStr(len) {
+    let str = "";
+    for (let i = 0; i < len; i++) str += String.fromCharCode(data.getUint8(offset++));
+    return str;
+  }
+  function readUint16() {
+    const val = data.getUint16(offset);
+    offset += 2;
+    return val;
+  }
+  function readUint32() {
+    const val = data.getUint32(offset);
+    offset += 4;
+    return val;
+  }
+  function readVLQ() {
+    let val = 0;
+    while (offset < data.byteLength) {
+      let b = data.getUint8(offset++);
+      val = (val << 7) | (b & 0x7F);
+      if (!(b & 0x80)) break;
+    }
+    return val;
+  }
+
+  const headerTag = readStr(4);
+  if (headerTag !== "MThd") throw new Error("File is not a valid Standard MIDI file (Missing MThd).");
+  const headerLen = readUint32();
+  const format = readUint16();
+  const numTracks = readUint16();
+  const division = readUint16();
+  if (headerLen > 6) offset += (headerLen - 6);
+
+  let rawNotes = [];
+
+  for (let t = 0; t < numTracks; t++) {
+    if (offset >= data.byteLength) break;
+    const trackTag = readStr(4);
+    const trackLen = readUint32();
+    const trackEnd = offset + trackLen;
+
+    let currentTicks = 0;
+    let runningStatus = null;
+    let activeNotes = {};
+
+    while (offset < trackEnd && offset < data.byteLength) {
+      const delta = readVLQ();
+      currentTicks += delta;
+
+      let status = data.getUint8(offset);
+      if (status >= 0x80) {
+        offset++;
+        runningStatus = status;
+      } else {
+        status = runningStatus;
+      }
+
+      if (!status) break;
+
+      const type = status & 0xF0;
+
+      if (status === 0xFF) {
+        // Meta event
+        offset++; // skip metaType
+        const metaLen = readVLQ();
+        offset += metaLen;
+      } else if (status === 0xF0 || status === 0xF7) {
+        // SysEx
+        const sysLen = readVLQ();
+        offset += sysLen;
+      } else if (type === 0x90 || type === 0x80) {
+        // Note On / Off
+        const note = data.getUint8(offset++);
+        const vel = data.getUint8(offset++);
+        const isNoteOn = (type === 0x90) && (vel > 0);
+
+        if (isNoteOn) {
+          if (!activeNotes[note]) activeNotes[note] = [];
+          activeNotes[note].push(currentTicks);
+        } else {
+          if (activeNotes[note] && activeNotes[note].length > 0) {
+            const startTick = activeNotes[note].shift();
+            rawNotes.push({
+              midi: note,
+              startTick: startTick,
+              durationTicks: Math.max(1, currentTicks - startTick)
+            });
+          }
+        }
+      } else if (type === 0xC0 || type === 0xD0) {
+        offset++;
+      } else if (type === 0xA0 || type === 0xB0 || type === 0xE0) {
+        offset += 2;
+      } else {
+        offset++;
+      }
+    }
+    offset = trackEnd;
+  }
+
+  rawNotes.sort((a, b) => a.startTick - b.startTick);
+  return { rawNotes, division: (division > 0 ? division : 480) };
+}
+
+// Map parsed MIDI pitches & timings into Ocarina fingering sequence
+function importMidiArrayBuffer(buffer) {
+  const { rawNotes, division } = parseMidiFile(buffer);
+  if (!rawNotes || rawNotes.length === 0) {
+    alert("No MIDI note data found in this file.");
+    return;
+  }
+
+  // Automatically transpose octave(s) so the melody fits Link's range (59 - 77)
+  const avgPitch = rawNotes.reduce((acc, n) => acc + n.midi, 0) / rawNotes.length;
+  let octaveShift = 0;
+  while (avgPitch + (octaveShift * 12) < 61) octaveShift++;
+  while (avgPitch + (octaveShift * 12) > 75) octaveShift--;
+
+  const minTick = rawNotes[0].startTick;
+  const ticksPerSec = division * 2; // 120 BPM conversion
+
+  // Monophonic quantization: for simultaneous chords, favor the higher pitch melody line
+  let monoNotes = [];
+  rawNotes.forEach(rn => {
+    let sTime = (rn.startTick - minTick) / ticksPerSec;
+    let dur = Math.max(0.18, rn.durationTicks / ticksPerSec);
+    let pitch = rn.midi + (octaveShift * 12);
+
+    if (monoNotes.length > 0 && Math.abs(sTime - monoNotes[monoNotes.length - 1].startTime) < 0.05) {
+      if (pitch > monoNotes[monoNotes.length - 1].midi) {
+        monoNotes[monoNotes.length - 1].midi = pitch;
+      }
+      return;
+    }
+    monoNotes.push({ midi: pitch, startTime: sTime, duration: dur });
+  });
+
+  // Convert each note to full Ocarina action event
+  const parsed = [];
+  monoNotes.forEach(mn => {
+    const targetMidi = Math.max(59, Math.min(77, Math.round(mn.midi)));
+    const guide = CHROMATIC_GUIDE.find(item => item.midi === targetMidi) || CHROMATIC_GUIDE[3];
+
+    let comboTokens = [];
+    let pdfTokens = [];
+    if (guide.dpad === 1) { comboTokens.push("D-Pad ▲"); pdfTokens.push("D-PAD UP"); }
+    else if (guide.dpad === -1) { comboTokens.push("D-Pad ▼"); pdfTokens.push("D-PAD DN"); }
+
+    if (guide.stickDir === 'up-full') { comboTokens.push("Stick ⮝ Full"); pdfTokens.push("STICK UP FULL"); }
+    else if (guide.stickDir === 'down-full') { comboTokens.push("Stick ⮟ Full"); pdfTokens.push("STICK DN FULL"); }
+
+    parsed.push({
+      button: guide.btn,
+      dpad: guide.dpad || 0,
+      stickDir: guide.stickDir || null,
+      comboDisplay: comboTokens.length > 0 ? comboTokens.join("<br>") : "(Natural)",
+      comboPlain: comboTokens.length > 0 ? "+ " + comboTokens.join(" + ") : "(Natural)",
+      pdfMod: pdfTokens.length > 0 ? pdfTokens.join(" + ") : "NATURAL",
+      hasVibrato: false,
+      pitch: guide.pitch.split('/')[0].trim(),
+      midi: guide.midi,
+      startTime: mn.startTime,
+      duration: mn.duration
+    });
+  });
+
+  if (parsed.length > 0) {
+    recordedEvents = parsed;
+    document.getElementById('text-notes-input').value = recordedEvents.map(eventToTextToken).join(", ");
+    renderSheetMusic();
+    updateSessionButtons();
+  }
+}
+
+// 4. File Input Handler for .mid and .txt
+function handleFileImport(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const fileName = file.name.toLowerCase();
+  if (fileName.endsWith('.txt')) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      document.getElementById('text-notes-input').value = evt.target.result;
+      loadFromTextInput();
+    };
+    reader.readAsText(file);
+  } else if (fileName.endsWith('.mid') || fileName.endsWith('.midi')) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        importMidiArrayBuffer(evt.target.result);
+      } catch (err) {
+        console.error("MIDI parsing error:", err);
+        alert("Failed to load MIDI file: " + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    alert("Please select a .txt or .mid/.midi file.");
+  }
+  e.target.value = "";
 }
 
 requestAnimationFrame(pollInput);
