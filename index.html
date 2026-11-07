@@ -563,7 +563,10 @@
           <span style="font-size:15px;">&bull;</span> Record Live
         </button>
         <button id="btn-play" class="btn-primary" onclick="playSong()" disabled>
-          ▶ Playback
+          ▶ Play
+        </button>
+        <button id="btn-stop-playback" class="btn-secondary" onclick="stopPlayback()" disabled title="Stop playback immediately">
+          ⏹ Stop
         </button>
       </div>
 
@@ -967,6 +970,8 @@ function stopNote() {
  */
 let isRecording = false;
 let isPlaying = false;
+let playbackAborted = false;
+let activePlaybackTimeout = null;
 let recordStartTime = 0;
 let recordedEvents = [];
 let activeRecordedNote = null;
@@ -1084,13 +1089,15 @@ setupMouseControls();
 function updateSessionButtons() {
   const hasNotes = recordedEvents.length > 0;
   document.getElementById('btn-play').disabled = !hasNotes || isRecording || isPlaying;
-  document.getElementById('btn-open-preview').disabled = !hasNotes || isRecording;
+  const btnStopPlayback = document.getElementById('btn-stop-playback');
+  if (btnStopPlayback) btnStopPlayback.disabled = !isPlaying;
+  document.getElementById('btn-open-preview').disabled = !hasNotes || isRecording || isPlaying;
   const btnExpMidi = document.getElementById('btn-export-midi');
   const btnExpTxt = document.getElementById('btn-export-txt');
   const btnCopyTxt = document.getElementById('btn-copy-txt');
-  if (btnExpMidi) btnExpMidi.disabled = !hasNotes || isRecording;
-  if (btnExpTxt) btnExpTxt.disabled = !hasNotes || isRecording;
-  if (btnCopyTxt) btnCopyTxt.disabled = !hasNotes || isRecording;
+  if (btnExpMidi) btnExpMidi.disabled = !hasNotes || isRecording || isPlaying;
+  if (btnExpTxt) btnExpTxt.disabled = !hasNotes || isRecording || isPlaying;
+  if (btnCopyTxt) btnCopyTxt.disabled = !hasNotes || isRecording || isPlaying;
 }
 
 // Handler for the time held toggle switch (syncs UI & modal)
@@ -1248,7 +1255,6 @@ function commitActiveNote() {
     recordedEvents.push(activeRecordedNote);
     renderSheetMusic();
     updateSessionButtons();
-    // Keep input textarea updated with note + timing data
     const textNotesInput = document.getElementById('text-notes-input');
     if (textNotesInput) {
       textNotesInput.value = recordedEvents.map((ev, idx, arr) => eventToTextToken(ev, idx, arr)).join(", ");
@@ -1420,7 +1426,7 @@ function setPreset(name) {
   const presets = {
     'ZeldasLullaby': "Y, X, A, Y, X, A",
     'SongOfStorms':  "L, R, X, L, R, X",
-    'SongOfTime':    "A, L, R, A, L, R",
+    'SongOfTime':    "A:0.5, L:1.0, R:0.5, A:0.5, L:1.0, R:0.5, A:0.25, Y+#:0.25, Y:0.5, R+^^:0.5, R:0.25, R+^^:0.25, A:0.5, L:0.5, L+vv:0.25, R+b:0.25, L:1.0",
     'Epona':         "X, Y, A, X, Y, A",
     'WizardsInWinter': "A:0.22, X:0.22, A+#:0.22, X:0.22, A:0.22, X:0.22, R+^^:0.22, X:0.22, R:0.22, X:0.22, R+b:0.22, X:0.22, L+b:0.22, X:0.22, R+b:0.22, X:0.22"
   };
@@ -1432,12 +1438,39 @@ function setPreset(name) {
 
 /**
  * ==============================================================================
- * MODULE 5: SEQUENCER RECORDING & PLAYBACK
+ * MODULE 5: SEQUENCER RECORDING & PLAYBACK (WITH CANCEL/STOP SUPPORT)
  * ==============================================================================
  */
+function sleepCancellable(ms) {
+  return new Promise((resolve) => {
+    activePlaybackTimeout = setTimeout(() => {
+      activePlaybackTimeout = null;
+      resolve();
+    }, ms);
+  });
+}
+
+function stopPlayback() {
+  if (!isPlaying) return;
+  playbackAborted = true;
+  if (activePlaybackTimeout) {
+    clearTimeout(activePlaybackTimeout);
+    activePlaybackTimeout = null;
+  }
+  stopNote();
+  updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
+  document.getElementById('mon-pitch').innerText = "---";
+  document.getElementById('mon-detune').innerText = "0 cents";
+  document.getElementById('mon-expr').innerText = "None";
+  isPlaying = false;
+  document.getElementById('btn-record').disabled = false;
+  updateSessionButtons();
+}
+
 function toggleRecord() {
   const btn = document.getElementById('btn-record');
   if (!isRecording) {
+    if (isPlaying) stopPlayback();
     isRecording = true;
     recordedEvents = [];
     activeRecordedNote = null;
@@ -1456,6 +1489,7 @@ function toggleRecord() {
 }
 
 function clearSong() {
+  if (isPlaying) stopPlayback();
   if (isRecording) toggleRecord();
   recordedEvents = [];
   activeRecordedNote = null;
@@ -1468,17 +1502,20 @@ function clearSong() {
 async function playSong() {
   if (recordedEvents.length === 0 || isPlaying) return;
   isPlaying = true;
-  document.getElementById('btn-play').disabled = true;
+  playbackAborted = false;
   document.getElementById('btn-record').disabled = true;
   updateSessionButtons();
 
   let playheadTime = 0;
 
   for (let i = 0; i < recordedEvents.length; i++) {
+    if (playbackAborted) break;
+
     const item = recordedEvents[i];
     const restDelay = item.startTime - playheadTime;
     if (restDelay > 0.005) {
-      await new Promise(r => setTimeout(r, restDelay * 1000));
+      await sleepCancellable(restDelay * 1000);
+      if (playbackAborted) break;
     }
 
     let stickY = 0;
@@ -1498,17 +1535,22 @@ async function playSong() {
     document.getElementById('mon-expr').innerText = item.hasVibrato ? "Vibrato" : "Playing";
 
     startNote(item.midi, 0, item.hasVibrato);
-    await new Promise(r => setTimeout(r, item.duration * 1000));
+    await sleepCancellable(item.duration * 1000);
     stopNote();
 
     updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
+    if (playbackAborted) break;
+
     playheadTime = item.startTime + item.duration;
   }
 
+  stopNote();
+  updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
   document.getElementById('mon-pitch').innerText = "---";
   document.getElementById('mon-detune').innerText = "0 cents";
   document.getElementById('mon-expr').innerText = "None";
   isPlaying = false;
+  playbackAborted = false;
   document.getElementById('btn-record').disabled = false;
   updateSessionButtons();
 }
