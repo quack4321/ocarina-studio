@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Ocarina of Time Studio & Tablature Generator</title>
-  <!-- Google Fonts: Cinzel & Cinzel Decorative for Authentic Zelda Typography -->
+  <!-- Google Fonts: Cinzel Decorative, Cinzel, and Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- jsPDF for Client-Side PDF Generation -->
+  <!-- jsPDF for Vector Client-Side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- soundfont-player for Authentic Sampled General MIDI Ocarina -->
+  <!-- soundfont-player for Authentic General MIDI Ocarina -->
   <script src="https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
 
   <style>
@@ -27,7 +27,7 @@
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       
-      /* Nintendo Switch 2 Button Colors */
+      /* Nintendo Switch 2 Controller Color Palette */
       --btn-l: #64748b;
       --btn-r: #64748b;
       --btn-a: #3b82f6;
@@ -38,7 +38,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
     body { background: var(--bg-dark); color: var(--text-main); padding: 18px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    .container { max-width: 1020px; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+    .container { max-width: 1040px; width: 100%; display: flex; flex-direction: column; gap: 16px; }
 
     /* Authentic Zelda Metallic Gold Header */
     header { text-align: center; margin-bottom: 2px; }
@@ -72,20 +72,20 @@
     .badge-midi { background: #1e3a8a; color: #93c5fd; }
 
     /* Layout Grids */
-    .grid-row { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
-    @media (max-width: 860px) { .grid-row { grid-template-columns: 1fr; } }
+    .grid-row { display: grid; grid-template-columns: 1fr 350px; gap: 16px; }
+    @media (max-width: 890px) { .grid-row { grid-template-columns: 1fr; } }
 
     .panel {
       background: var(--panel-bg); border: 1px solid var(--panel-border);
-      border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+      border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 14px;
     }
     .panel h2 {
       font-family: 'Cinzel', serif;
-      font-size: 14px;
+      font-size: 15px;
       letter-spacing: 0.5px;
       color: var(--gold-highlight);
       border-bottom: 1px solid var(--panel-border);
-      padding-bottom: 6px;
+      padding-bottom: 8px;
     }
 
     /* SVG Interactive Controller Viewport */
@@ -103,7 +103,7 @@
     .btn-x-active { fill: var(--btn-x) !important; color: var(--btn-x); }
     .btn-y-active { fill: var(--btn-y) !important; color: var(--btn-y); }
     .dpad-active  { fill: var(--gold-highlight) !important; color: var(--gold-highlight); stroke: #fef08a !important; }
-    .stick-active { fill: var(--accent-cyan) !important; stroke: #fff !important; }
+    .stick-active { fill: var(--accent-cyan) !important; stroke: #fff !important; filter: drop-shadow(0 0 6px var(--accent-cyan)); }
     .vibrato-active { fill: #c084fc !important; stroke: #e9d5ff !important; filter: drop-shadow(0 0 8px #c084fc); }
 
     /* Monitor Display Box */
@@ -128,6 +128,8 @@
     .btn-danger:hover { background: #b91c1c; }
     .btn-secondary { background: #263147; color: #fff; }
     .btn-secondary:hover { background: #384666; }
+    .btn-success { background: #059669; color: #fff; }
+    .btn-success:hover { background: #047857; }
     .btn-preset { background: #1e293b; color: #94a3b8; font-size: 11px; padding: 5px 8px; border-radius: 6px; }
     .btn-preset:hover { background: #334155; color: #fff; }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -135,15 +137,15 @@
     /* Non-Musician Tablature Display */
     .sheet-container {
       background: #080a0f; border-radius: 8px; border: 1px solid var(--panel-border); padding: 16px;
-      min-height: 180px; max-height: 270px; overflow-y: auto; display: flex; flex-wrap: wrap;
+      min-height: 190px; max-height: 290px; overflow-y: auto; display: flex; flex-wrap: wrap;
       gap: 12px; align-content: flex-start;
     }
-    .sheet-empty { width: 100%; text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 65px; }
+    .sheet-empty { width: 100%; text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 75px; }
 
     .note-card {
       background: #192030; border-radius: 8px; border: 1px solid #36445f;
       padding: 10px 8px; display: flex; flex-direction: column; align-items: center;
-      gap: 5px; min-width: 82px; animation: popIn 0.15s ease;
+      gap: 6px; min-width: 90px; animation: popIn 0.15s ease;
     }
     @keyframes popIn { 0% { transform: scale(0.75); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -153,18 +155,144 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     }
     .card-combo {
-      font-size: 10px; font-weight: 700; color: var(--gold-highlight); text-align: center;
-      min-height: 24px; display: flex; align-items: center; justify-content: center; line-height: 1.25;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; min-height: 42px; width: 100%;
     }
-    .card-pitch { font-size: 10px; font-weight: 600; color: #64748b; }
+    .combo-icon-row {
+      display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 22px;
+    }
+    .combo-icon-placeholder {
+      min-height: 22px;
+    }
+    .combo-text {
+      font-size: 9.5px; font-weight: 700; color: var(--gold-highlight); text-align: center;
+      line-height: 1.2; word-break: break-word;
+    }
+    .combo-text.natural-text {
+      color: #64748b; font-weight: 500; font-style: italic;
+    }
+    .card-pitch { font-size: 11px; font-weight: 700; color: #cbd5e1; }
 
     textarea {
-      width: 100%; height: 64px; background: #080a0f; border: 1px solid var(--panel-border);
+      width: 100%; height: 60px; background: #080a0f; border: 1px solid var(--panel-border);
       border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 13px; resize: vertical;
     }
     textarea:focus { outline: 1px solid var(--accent-cyan); }
-    .guide-box { font-size: 11px; line-height: 1.5; color: var(--text-muted); }
+    .guide-box { font-size: 11px; line-height: 1.6; color: var(--text-muted); }
     .guide-box code { color: var(--gold-highlight); background: #080a0f; padding: 1px 4px; border-radius: 4px; }
+
+    /* Expanded Chromatic Fingering Reference Guide */
+    .chart-container {
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      overflow: visible;
+      background: #090c12;
+    }
+    table.fingering-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    table.fingering-table th {
+      background: #0f131d;
+      padding: 12px 18px;
+      color: var(--gold-highlight);
+      font-weight: 700;
+      font-size: 13px;
+      border-bottom: 2px solid var(--panel-border);
+      letter-spacing: 0.5px;
+    }
+    table.fingering-table td {
+      padding: 11px 18px;
+      border-bottom: 1px solid #1a2233;
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+    table.fingering-table tr:last-child td {
+      border-bottom: none;
+    }
+    table.fingering-table tr:hover {
+      background: #182030;
+      cursor: pointer;
+    }
+    .pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 11px;
+      color: #fff;
+      margin-right: 6px;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 12, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-dialog {
+      background: #141824;
+      border: 1px solid #28334a;
+      border-radius: 14px;
+      max-width: 840px;
+      width: 100%;
+      max-height: 94vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.85);
+      overflow: hidden;
+      animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalPop {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 14px 20px;
+      background: #0f131d;
+      border-bottom: 1px solid #232b3e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      color: var(--gold-highlight);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      background: #090c12;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    #sheet-preview-canvas {
+      box-shadow: 0 10px 35px rgba(0,0,0,0.65);
+      border-radius: 4px;
+      max-width: 100%;
+      height: auto;
+    }
   </style>
 </head>
 <body>
@@ -172,7 +300,7 @@
 <div class="container">
   <header>
     <h1>Ocarina of Time Studio</h1>
-    <p>Switch 2 Tuning &bull; Sampled MIDI Audio &bull; Non-Musician Action Tablature</p>
+    <p>Switch 2 Tuning &bull; Sampled MIDI Audio &bull; Clean Tablature Generator</p>
   </header>
 
   <!-- Status Bar -->
@@ -183,12 +311,11 @@
   </div>
 
   <div class="grid-row">
-    <!-- LEFT: Interactive Controller (Separated D-Pad & Left Stick + Vibrato) -->
+    <!-- LEFT: Interactive Controller -->
     <div class="panel">
-      <h2>Interactive Controller Diagram (Click or Use Gamepad)</h2>
+      <h2>Interactive Controller Diagram (Drag Stick / Click / Gamepad)</h2>
       <div class="controller-view">
-        <svg width="440" height="260" viewBox="0 0 440 260">
-          <!-- Controller Outer Shell -->
+        <svg id="controller-svg" width="440" height="260" viewBox="0 0 440 260">
           <path d="M 105 40 C 150 35, 290 35, 335 40 C 390 46, 425 125, 405 205 C 388 245, 340 238, 305 188 C 275 166, 165 166, 135 188 C 100 238, 52 245, 35 205 C 15 125, 50 46, 105 40 Z" 
                 fill="#181e2b" stroke="#2a354c" stroke-width="4"/>
 
@@ -203,65 +330,39 @@
             <text x="330" y="31" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle" pointer-events="none">R (F)</text>
           </g>
 
-          <!-- LEFT STICK (Elevated to y=78: Vertical Pitch Bends & Horizontal Vibrato) -->
-          <g id="grp-stick" transform="translate(110, 78)">
-            <circle cx="0" cy="0" r="28" fill="#0c1017" stroke="#334155" stroke-width="2"/>
-            
-            <!-- Clickable Zones for Pitch Bends (Up/Down) & Vibrato (Left/Right) -->
-            <rect class="interactive-element" onclick="setMouseStickPitch(2)" x="-20" y="-28" width="40" height="11" fill="transparent"/>
-            <rect class="interactive-element" onclick="setMouseStickPitch(1)" x="-20" y="-17" width="40" height="11" fill="transparent"/>
-            <rect class="interactive-element" onclick="setMouseStickPitch(0)" x="-20" y="-6" width="40" height="12" fill="transparent"/>
-            <rect class="interactive-element" onclick="setMouseStickPitch(-1)" x="-20" y="6" width="40" height="11" fill="transparent"/>
-            <rect class="interactive-element" onclick="setMouseStickPitch(-2)" x="-20" y="17" width="40" height="11" fill="transparent"/>
-            
-            <!-- Left & Right Vibrato Click Zones -->
-            <path class="interactive-element" onclick="toggleMouseVibrato()" d="M -28 -14 A 28 28 0 0 0 -28 14 Z" fill="transparent"/>
-            <path class="interactive-element" onclick="toggleMouseVibrato()" d="M 28 -14 A 28 28 0 0 1 28 14 Z" fill="transparent"/>
-
-            <!-- Pitch & Vibrato Guides -->
-            <text x="0" y="-19" fill="#475569" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">+2</text>
-            <text x="0" y="-9" fill="#475569" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">+1</text>
-            <text x="0" y="15" fill="#475569" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">-1</text>
-            <text x="0" y="24" fill="#475569" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">-2</text>
+          <!-- LEFT STICK: Smooth Analog Drag Area -->
+          <g id="grp-stick" transform="translate(110, 78)" style="cursor:grab;">
+            <circle cx="0" cy="0" r="30" fill="#0c1017" stroke="#334155" stroke-width="2"/>
+            <text x="0" y="-19" fill="#475569" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">+200c</text>
+            <text x="0" y="24" fill="#475569" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">-200c</text>
             <text x="-21" y="3" fill="#64748b" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">&sim;</text>
             <text x="21" y="3" fill="#64748b" font-size="7" font-weight="bold" text-anchor="middle" pointer-events="none">&sim;</text>
-
             <circle id="pad-stick-thumb" cx="0" cy="0" r="16" fill="#3b4861" stroke="#64748b" stroke-width="2" pointer-events="none"/>
           </g>
 
-          <!-- D-PAD (Moved cleanly down to y=168: 37px separation from stick bottom) -->
+          <!-- D-PAD -->
           <g transform="translate(110, 168)">
             <rect x="-11" y="-30" width="22" height="60" rx="3" fill="#0c1017"/>
             <rect x="-30" y="-11" width="60" height="22" rx="3" fill="#0c1017"/>
-            
-            <!-- Up (+1 Semitone) -->
             <polygon id="pad-dpad-up" class="pad-btn interactive-element" points="-9,-11 9,-11 0,-27" />
-            <!-- Down (-1 Semitone) -->
             <polygon id="pad-dpad-down" class="pad-btn interactive-element" points="-9,11 9,11 0,27" />
             <text x="0" y="3" fill="#64748b" font-size="8" font-weight="bold" text-anchor="middle" pointer-events="none">&plusmn;1</text>
           </g>
 
           <!-- Right Face Buttons: X, A, Y -->
           <g transform="translate(330, 114)">
-            <!-- X: High D (Top) -->
             <g id="grp-btn-x" class="interactive-element">
               <circle id="pad-btn-x" class="pad-btn" cx="0" cy="-28" r="14" />
               <text x="0" y="-23" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle" pointer-events="none">X</text>
             </g>
-
-            <!-- A: Note A (Right) -->
             <g id="grp-btn-a" class="interactive-element">
               <circle id="pad-btn-a" class="pad-btn" cx="28" cy="0" r="14" />
               <text x="28" y="5" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle" pointer-events="none">A</text>
             </g>
-
-            <!-- Y: Note B (Left) -->
             <g id="grp-btn-y" class="interactive-element">
               <circle id="pad-btn-y" class="pad-btn" cx="-28" cy="0" r="14" />
               <text x="-28" y="5" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle" pointer-events="none">Y</text>
             </g>
-
-            <!-- Bottom Button B (Inactive) -->
             <circle cx="0" cy="28" r="11" fill="#0c1017" stroke="#1e293b" stroke-width="1.5"/>
           </g>
         </svg>
@@ -273,12 +374,12 @@
           <div id="mon-pitch" class="value" style="color:var(--gold-highlight)">---</div>
         </div>
         <div class="monitor-cell">
-          <div class="label">Action Recipe</div>
-          <div id="mon-action" class="value" style="color:var(--accent-cyan); font-size:14px;">Idle</div>
+          <div class="label">Pitch Detune</div>
+          <div id="mon-detune" class="value" style="color:var(--accent-cyan); font-size:15px;">0 cents</div>
         </div>
         <div class="monitor-cell">
-          <div class="label">Expression</div>
-          <div id="mon-expr" class="value" style="color:#c084fc; font-size:14px;">None</div>
+          <div class="label">Expression / Vib</div>
+          <div id="mon-expr" class="value" style="color:#c084fc; font-size:15px;">None</div>
         </div>
       </div>
     </div>
@@ -296,8 +397,8 @@
       </div>
 
       <div class="btn-row">
-        <button id="btn-pdf" class="btn-secondary" onclick="exportPDF()" disabled>
-          📄 Export PDF
+        <button id="btn-open-preview" class="btn-secondary" onclick="openExportModal()" disabled>
+          👁 View &amp; Export Sheet
         </button>
         <button class="btn-secondary" onclick="clearSong()">
           ✕ Clear
@@ -313,11 +414,11 @@
       <div class="guide-box">
         <b>Quick Key:</b><br>
         &bull; <b>Buttons:</b> <code>L</code>, <code>R</code>, <code>A</code>, <code>Y</code>, <code>X</code><br>
-        &bull; <b>D-Pad:</b> <code>+#</code> (+1) &bull; <code>+b</code> (-1)<br>
-        &bull; <b>Stick Vert:</b> <code>+^</code> (+1) &bull; <code>+^^</code> (+2) &bull; <code>+v</code> (-1) &bull; <code>+vv</code> (-2)<br>
-        &bull; <b>Stick Horiz:</b> <code>+~</code> or <code>+vib</code> (Vibrato)<br>
+        &bull; <b>D-Pad:</b> <span id="quick-dpad-icons" style="display:inline-flex; align-items:center; gap:4px; vertical-align:middle;"></span> <code>+#</code> (+1) &bull; <code>+b</code> (-1)<br>
+        &bull; <b>Stick Vert:</b> <span id="quick-stick-icons" style="display:inline-flex; align-items:center; gap:4px; vertical-align:middle;"></span> <code>+^</code> / <code>+^^</code> (+1/+2) &bull; <code>+v</code> / <code>+vv</code> (-1/-2)<br>
+        &bull; <b>Stick Horiz:</b> <span id="quick-vib-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"></span> <code>+~</code> / <code>+vib</code> (Vibrato)<br>
         <i>Presets:</i>
-        <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:5px;">
+        <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
           <button class="btn-preset" onclick="setPreset('ZeldasLullaby')">Zelda's Lullaby</button>
           <button class="btn-preset" onclick="setPreset('SongOfStorms')">Song of Storms</button>
           <button class="btn-preset" onclick="setPreset('SongOfTime')">Song of Time</button>
@@ -327,11 +428,60 @@
     </div>
   </div>
 
-  <!-- BOTTOM: Non-Musician Sheet Music -->
+  <!-- 1. NON-MUSICIAN SHEET MUSIC VISUALS BOX -->
   <div class="panel">
     <h2>Non-Musician Controller Sheet Music (Visual Action Sequence)</h2>
     <div id="sheet-music" class="sheet-container">
       <div class="sheet-empty">No notes recorded yet. Play notes with your controller or load from text!</div>
+    </div>
+  </div>
+
+  <!-- 2. EXPANDED CHROMATIC FINGERING GUIDE -->
+  <div class="panel">
+    <h2>Chromatic Fingering &amp; Note Guide (Click Row to Play &amp; Test)</h2>
+    <div class="chart-container">
+      <table class="fingering-table">
+        <thead>
+          <tr>
+            <th style="width: 20%;">Pitch</th>
+            <th style="width: 48%;">Primary Controller Combination</th>
+            <th style="width: 32%;">Enharmonic Alternate (Equal Tuning)</th>
+          </tr>
+        </thead>
+        <tbody id="fingering-table-body">
+          <!-- Populated dynamically via JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     FULL-SCREEN PREVIEW & EXPORT MODAL
+     ========================================================================== -->
+<div id="export-modal" class="modal-overlay" onclick="if(event.target === this) closeExportModal()">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span>📜</span> Tablature Sheet Preview
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="exportPDF()" style="padding: 8px 14px; font-size: 12px;">
+          📄 Download PDF
+        </button>
+        <button class="btn-success" onclick="downloadPNG()" style="padding: 8px 14px; font-size: 12px;">
+          🖼 Download PNG
+        </button>
+        <button class="btn-secondary" onclick="printSheet()" style="padding: 8px 14px; font-size: 12px;">
+          🖨 Print
+        </button>
+        <button class="btn-secondary" onclick="closeExportModal()" style="padding: 8px 12px; font-size: 13px;">
+          ✕
+        </button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <canvas id="sheet-preview-canvas"></canvas>
     </div>
   </div>
 </div>
@@ -339,9 +489,8 @@
 <script>
 /**
  * ==============================================================================
- * MODULE 1: MUSIC THEORY & TUNING (SWITCH 2 / 2026 STANDARD)
+ * MODULE 1: MUSIC THEORY, SVG ICON FACTORY & CHROMATIC REFERENCE
  * ==============================================================================
- * Standard notes: L=D4(62), R=F4(65), A=A4(69), Y=B4(71), X=D5(74)
  */
 const BASE_PITCHES = {
   'L': { midi: 62, note: "D4",  color: "var(--btn-l)", hex: [100, 116, 139] },
@@ -351,7 +500,7 @@ const BASE_PITCHES = {
   'X': { midi: 74, note: "D5",  color: "var(--btn-x)", hex: [6, 182, 212] }
 };
 
-const NOTE_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 function midiToName(midi) {
   const rounded = Math.round(midi);
   const oct = Math.floor(rounded / 12) - 1;
@@ -361,22 +510,155 @@ function midiToFreq(midi) {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
+// -----------------------------------------------------------------------------
+// DEDICATED SVG ICON GENERATORS FOR D-PAD & ANALOG STICK
+// -----------------------------------------------------------------------------
+function getDpadSvg(direction = 'up', size = 20) {
+  const isUp = direction === 'up';
+  const isDown = direction === 'down';
+  const upColor = isUp ? '#facc15' : '#2a3346';
+  const downColor = isDown ? '#facc15' : '#2a3346';
+  const wingColor = '#2a3346';
+  const strokeColor = '#475569';
+  const activeStroke = '#fef08a';
+
+  return `<svg class="icon-svg dpad-icon" width="${size}" height="${size}" viewBox="0 0 24 24" style="vertical-align:middle; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));">
+    <rect x="8" y="1" width="8" height="22" rx="2" fill="#141923" stroke="${strokeColor}" stroke-width="1.2"/>
+    <rect x="1" y="8" width="22" height="8" rx="2" fill="#141923" stroke="${strokeColor}" stroke-width="1.2"/>
+    <rect x="2" y="8.5" width="6.5" height="7" fill="${wingColor}"/>
+    <rect x="15.5" y="8.5" width="6.5" height="7" fill="${wingColor}"/>
+    <rect x="8" y="8" width="8" height="8" fill="#1e2536"/>
+    <circle cx="12" cy="12" r="1.5" fill="#475569"/>
+    <!-- Up wing -->
+    <rect x="8.5" y="1.5" width="7" height="7" rx="1.5" fill="${upColor}" stroke="${isUp ? activeStroke : 'none'}" stroke-width="1"/>
+    ${isUp ? '<polygon points="12,2.8 9.5,6.5 14.5,6.5" fill="#713f12"/>' : ''}
+    <!-- Down wing -->
+    <rect x="8.5" y="15.5" width="7" height="7" rx="1.5" fill="${downColor}" stroke="${isDown ? activeStroke : 'none'}" stroke-width="1"/>
+    ${isDown ? '<polygon points="12,21.2 9.5,17.5 14.5,17.5" fill="#713f12"/>' : ''}
+  </svg>`;
+}
+
+function getStickSvg(direction = 'up', intensity = 'full', size = 20) {
+  let nubX = 12;
+  let nubY = 12;
+  let nubColor = "#06b6d4";
+  let strokeColor = "#38bdf8";
+  let glyph = "";
+
+  if (direction === 'up') {
+    nubY = (intensity === 'full') ? 6 : 8.5;
+    glyph = (intensity === 'full') 
+      ? '<polygon points="12,3.5 9.5,6.5 14.5,6.5" fill="#ffffff"/><polygon points="12,6.8 10,9 14,9" fill="#ffffff"/>'
+      : '<polygon points="12,5.5 9.5,8.5 14.5,8.5" fill="#ffffff"/>';
+  } else if (direction === 'down') {
+    nubY = (intensity === 'full') ? 18 : 15.5;
+    glyph = (intensity === 'full')
+      ? '<polygon points="12,20.5 9.5,17.5 14.5,17.5" fill="#ffffff"/><polygon points="12,17.2 10,15 14,15" fill="#ffffff"/>'
+      : '<polygon points="12,18.5 9.5,15.5 14.5,15.5" fill="#ffffff"/>';
+  } else if (direction === 'vibrato') {
+    nubColor = "#c084fc";
+    strokeColor = "#e9d5ff";
+    glyph = '<path d="M 7 12 Q 9.5 9 12 12 T 17 12" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>';
+  } else {
+    nubColor = "#334155";
+    strokeColor = "#64748b";
+  }
+
+  return `<svg class="icon-svg stick-icon" width="${size}" height="${size}" viewBox="0 0 24 24" style="vertical-align:middle; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));">
+    <circle cx="12" cy="12" r="10.5" fill="#0d111a" stroke="#334155" stroke-width="1.5"/>
+    <line x1="12" y1="2" x2="12" y2="5" stroke="#475569" stroke-width="1"/>
+    <line x1="12" y1="19" x2="12" y2="22" stroke="#475569" stroke-width="1"/>
+    <line x1="2" y1="12" x2="5" y2="12" stroke="#475569" stroke-width="1"/>
+    <line x1="19" y1="12" x2="22" y2="12" stroke="#475569" stroke-width="1"/>
+    ${(direction === 'up' || direction === 'down') ? `<line x1="12" y1="12" x2="${nubX}" y2="${nubY}" stroke="${nubColor}" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>` : ''}
+    <circle cx="${nubX}" cy="${nubY}" r="5.5" fill="${nubColor}" stroke="${strokeColor}" stroke-width="1.2"/>
+    ${glyph}
+  </svg>`;
+}
+
+const CHROMATIC_GUIDE = [
+  { pitch: "B3", midi: 59, btn: "L", mod: "Stick Down (Full) + D-Pad Down", alt: "---", sY: 1.0, dpad: -1, stickDir: "down-full" },
+  { pitch: "C4", midi: 60, btn: "L", mod: "Stick Down (Full)", alt: "---", sY: 1.0, dpad: 0, stickDir: "down-full" },
+  { pitch: "C#4 / Db4", midi: 61, btn: "L", mod: "D-Pad Down", alt: "---", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "D4", midi: 62, btn: "L", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "D#4 / Eb4", midi: 63, btn: "L", mod: "D-Pad Up", alt: "R + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "E4", midi: 64, btn: "R", mod: "D-Pad Down", alt: "L + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "F4", midi: 65, btn: "R", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "F#4 / Gb4", midi: 66, btn: "R", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "G4", midi: 67, btn: "R", mod: "Stick Up (Full)", alt: "A + Stick Down (Full)", sY: -1.0, dpad: 0, stickDir: "up-full" },
+  { pitch: "G#4 / Ab4", midi: 68, btn: "A", mod: "D-Pad Down", alt: "R + Stick Up (Full) + D-Pad Up", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "A4", midi: 69, btn: "A", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "A#4 / Bb4", midi: 70, btn: "A", mod: "D-Pad Up", alt: "Y + D-Pad Down", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "B4", midi: 71, btn: "Y", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "C5", midi: 72, btn: "Y", mod: "D-Pad Up", alt: "X + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "C#5 / Db5", midi: 73, btn: "X", mod: "D-Pad Down", alt: "Y + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "D5", midi: 74, btn: "X", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "D#5 / Eb5", midi: 75, btn: "X", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "E5", midi: 76, btn: "X", mod: "Stick Up (Full)", alt: "---", sY: -1.0, dpad: 0, stickDir: "up-full" },
+  { pitch: "F5", midi: 77, btn: "X", mod: "Stick Up (Full) + D-Pad Up", alt: "---", sY: -1.0, dpad: 1, stickDir: "up-full" }
+];
+
+function populateFingeringTable() {
+  const tbody = document.getElementById('fingering-table-body');
+  tbody.innerHTML = "";
+  CHROMATIC_GUIDE.forEach(item => {
+    const tr = document.createElement('tr');
+    const bg = BASE_PITCHES[item.btn]?.color || "#334155";
+    
+    let icons = [];
+    if (item.dpad === 1) icons.push(getDpadSvg('up', 18));
+    if (item.dpad === -1) icons.push(getDpadSvg('down', 18));
+    if (item.stickDir === 'up-full') icons.push(getStickSvg('up', 'full', 18));
+    if (item.stickDir === 'down-full') icons.push(getStickSvg('down', 'full', 18));
+    const iconHtml = icons.length > 0 ? `<span style="display:inline-flex; align-items:center; gap:3px; margin:0 4px; vertical-align:middle;">${icons.join('')}</span>` : "";
+
+    tr.innerHTML = `
+      <td style="font-weight:700; color:#fff; font-size:14px;">${item.pitch}</td>
+      <td style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+        <span class="pill" style="background:${bg}">${item.btn}</span>
+        ${iconHtml}
+        <span>+ ${item.mod}</span>
+      </td>
+      <td style="color:#94a3b8;">${item.alt}</td>
+    `;
+    tr.onclick = () => {
+      startNote(item.midi);
+      const mock = { L: false, R: false, A: false, X: false, Y: false, dUp: item.dpad === 1, dDown: item.dpad === -1, stickX: 0, stickY: item.sY, vibrato: false };
+      mock[item.btn] = true;
+      updateControllerSVG(mock);
+      document.getElementById('mon-pitch').innerText = item.pitch.split('/')[0].trim();
+      document.getElementById('mon-detune').innerText = `${Math.round(-item.sY * 200 + item.dpad * 100)} cents`;
+      setTimeout(() => {
+        stopNote();
+        updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
+      }, 550);
+    };
+    tbody.appendChild(tr);
+  });
+
+  // Populate Quick Key Reference icons
+  const qDpad = document.getElementById('quick-dpad-icons');
+  if (qDpad) qDpad.innerHTML = getDpadSvg('up', 16) + getDpadSvg('down', 16);
+  const qStick = document.getElementById('quick-stick-icons');
+  if (qStick) qStick.innerHTML = getStickSvg('up', 'full', 16) + getStickSvg('down', 'full', 16);
+  const qVib = document.getElementById('quick-vib-icon');
+  if (qVib) qVib.innerHTML = getStickSvg('vibrato', 'none', 16);
+}
+window.addEventListener('DOMContentLoaded', populateFingeringTable);
+
 
 /**
  * ==============================================================================
- * MODULE 2: AUDIO ENGINE (SOUNDFONT SAMPLES + SINE LFO VIBRATO)
+ * MODULE 2: AUDIO ENGINE
  * ==============================================================================
  */
 const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let soundfontInstrument = null;
 let activeSoundfontNode = null;
-
-// Hardware vibrato LFO nodes
 let vibratoLfo = null;
 let vibratoGain = null;
 
-// Dual-oscillator synth fallback
 let fallbackOsc = null;
 let fallbackSubOsc = null;
 let fallbackGain = null;
@@ -403,10 +685,7 @@ function loadSoundfont() {
 window.addEventListener('load', loadSoundfont);
 window.addEventListener('click', () => { if (!audioCtx) initAudio(); }, { once: true });
 
-/**
- * Triggers sounding note with real-time vibrato oscillation
- */
-function startNote(midiNumber, hasVibrato = false) {
+function startNote(midiNumber, initialDetuneCents = 0, hasVibrato = false) {
   initAudio();
   stopNote();
 
@@ -415,18 +694,20 @@ function startNote(midiNumber, hasVibrato = false) {
   if (soundfontInstrument) {
     activeSoundfontNode = soundfontInstrument.play(midiNumber, now, { gain: 1.4, loop: true });
 
-    // Attach authentic 5.6 Hz Vibrato LFO if active
-    if (hasVibrato && activeSoundfontNode && activeSoundfontNode.source && activeSoundfontNode.source.detune) {
-      vibratoLfo = audioCtx.createOscillator();
-      vibratoLfo.frequency.setValueAtTime(5.6, now);
-      vibratoGain = audioCtx.createGain();
-      vibratoGain.gain.setValueAtTime(32, now); // 32 cents pitch fluctuation
-      vibratoLfo.connect(vibratoGain);
-      vibratoGain.connect(activeSoundfontNode.source.detune);
-      vibratoLfo.start(now);
+    if (activeSoundfontNode && activeSoundfontNode.source && activeSoundfontNode.source.detune) {
+      activeSoundfontNode.source.detune.setValueAtTime(initialDetuneCents, now);
+
+      if (hasVibrato) {
+        vibratoLfo = audioCtx.createOscillator();
+        vibratoLfo.frequency.setValueAtTime(5.6, now);
+        vibratoGain = audioCtx.createGain();
+        vibratoGain.gain.setValueAtTime(32, now);
+        vibratoLfo.connect(vibratoGain);
+        vibratoGain.connect(activeSoundfontNode.source.detune);
+        vibratoLfo.start(now);
+      }
     }
   } else {
-    // Warm synth fallback
     const freq = midiToFreq(midiNumber);
     fallbackGain = audioCtx.createGain();
     fallbackGain.gain.setValueAtTime(0.001, now);
@@ -439,10 +720,12 @@ function startNote(midiNumber, hasVibrato = false) {
     fallbackOsc = audioCtx.createOscillator();
     fallbackOsc.type = "triangle";
     fallbackOsc.frequency.setValueAtTime(freq, now);
+    fallbackOsc.detune.setValueAtTime(initialDetuneCents, now);
 
     fallbackSubOsc = audioCtx.createOscillator();
     fallbackSubOsc.type = "sine";
     fallbackSubOsc.frequency.setValueAtTime(freq, now);
+    fallbackSubOsc.detune.setValueAtTime(initialDetuneCents, now);
 
     if (hasVibrato) {
       vibratoLfo = audioCtx.createOscillator();
@@ -462,6 +745,18 @@ function startNote(midiNumber, hasVibrato = false) {
 
     fallbackOsc.start(now);
     fallbackSubOsc.start(now);
+  }
+}
+
+function updateContinuousPitchBend(detuneCents) {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  if (activeSoundfontNode && activeSoundfontNode.source && activeSoundfontNode.source.detune) {
+    activeSoundfontNode.source.detune.setValueAtTime(detuneCents, now);
+  }
+  if (fallbackOsc && fallbackSubOsc) {
+    fallbackOsc.detune.setValueAtTime(detuneCents, now);
+    fallbackSubOsc.detune.setValueAtTime(detuneCents, now);
   }
 }
 
@@ -494,7 +789,7 @@ function stopNote() {
 
 /**
  * ==============================================================================
- * MODULE 3: INPUT SUBSYSTEM & CONTROLLER POLLING
+ * MODULE 3: INPUT SUBSYSTEM & JOYSTICK
  * ==============================================================================
  */
 let isRecording = false;
@@ -503,15 +798,14 @@ let recordStartTime = 0;
 let recordedEvents = [];
 let activeRecordedNote = null;
 
-// Input tracking
 let keyboardState = { L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, vibrato: false };
 let mouseHeldNoteBtn = null;
-let mouseLatchedDpad = 0;    // -1 (Down), 0, +1 (Up)
-let mouseLatchedStickY = 0;  // -2, -1, 0, +1, +2
-let mouseLatchedVibrato = false;
+let mouseLatchedDpad = 0;
+
+let stickState = { x: 0, y: 0 };
+let isDraggingStick = false;
 let currentNoteState = null;
 
-// Keyboard handlers
 window.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'TEXTAREA' || e.repeat) return;
   const k = e.key.toLowerCase();
@@ -537,7 +831,6 @@ window.addEventListener('keyup', (e) => {
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || k === 'v') keyboardState.vibrato = false;
 });
 
-// Gamepad Hardware Connection Detection
 window.addEventListener("gamepadconnected", (e) => {
   document.getElementById('gamepad-status').innerHTML = `<span class="badge badge-connected">Connected: ${e.gamepad.id.slice(0, 20)}...</span>`;
 });
@@ -545,12 +838,49 @@ window.addEventListener("gamepaddisconnected", () => {
   document.getElementById('gamepad-status').innerHTML = `<span class="badge badge-disconnected">No Gamepad Detected</span>`;
 });
 
-function setMouseStickPitch(val) {
-  mouseLatchedStickY = (mouseLatchedStickY === val) ? 0 : val;
+function setupAnalogStickDrag() {
+  const stickGroup = document.getElementById('grp-stick');
+  const svg = document.getElementById('controller-svg');
+
+  const onPointerDown = (e) => {
+    isDraggingStick = true;
+    stickGroup.style.cursor = 'grabbing';
+    updateStickFromPointer(e);
+  };
+  const onPointerMove = (e) => {
+    if (!isDraggingStick) return;
+    updateStickFromPointer(e);
+  };
+  const onPointerUp = () => {
+    if (!isDraggingStick) return;
+    isDraggingStick = false;
+    stickGroup.style.cursor = 'grab';
+    stickState.x = 0;
+    stickState.y = 0;
+  };
+
+  function updateStickFromPointer(e) {
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const dx = svgP.x - 110;
+    const dy = svgP.y - 78;
+    const maxRadius = 15;
+
+    const distance = Math.hypot(dx, dy);
+    const clampedDistance = Math.min(distance, maxRadius);
+    const angle = Math.atan2(dy, dx);
+
+    stickState.x = (clampedDistance / maxRadius) * Math.cos(angle);
+    stickState.y = (clampedDistance / maxRadius) * Math.sin(angle);
+  }
+
+  stickGroup.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
 }
-function toggleMouseVibrato() {
-  mouseLatchedVibrato = !mouseLatchedVibrato;
-}
+setupAnalogStickDrag();
 
 function setupMouseControls() {
   const registerFaceBtn = (id, key) => {
@@ -577,9 +907,6 @@ function setupMouseControls() {
 }
 setupMouseControls();
 
-/**
- * 60 FPS Gamepad & Input Polling Loop
- */
 function pollInput() {
   if (isPlaying) {
     requestAnimationFrame(pollInput);
@@ -597,38 +924,32 @@ function pollInput() {
     Y: keyboardState.Y || mouseHeldNoteBtn === 'Y',
     dUp: keyboardState.dUp || mouseLatchedDpad === 1,
     dDown: keyboardState.dDown || mouseLatchedDpad === -1,
-    stickSemis: mouseLatchedStickY,
-    vibrato: keyboardState.vibrato || mouseLatchedVibrato,
-    stickXVal: 0
+    stickX: stickState.x,
+    stickY: stickState.y,
+    vibrato: keyboardState.vibrato || Math.abs(stickState.x) > 0.35
   };
 
   if (gp) {
     raw.L = raw.L || gp.buttons[4]?.pressed;
     raw.R = raw.R || gp.buttons[5]?.pressed;
-    raw.A = raw.A || gp.buttons[1]?.pressed; // Switch 'A'
-    raw.X = raw.X || gp.buttons[3]?.pressed; // Switch 'X'
-    raw.Y = raw.Y || gp.buttons[2]?.pressed; // Switch 'Y'
+    raw.A = raw.A || gp.buttons[1]?.pressed;
+    raw.X = raw.X || gp.buttons[3]?.pressed;
+    raw.Y = raw.Y || gp.buttons[2]?.pressed;
     raw.dUp = raw.dUp || gp.buttons[12]?.pressed;
     raw.dDown = raw.dDown || gp.buttons[13]?.pressed;
 
-    // Analog Stick Vertical Pitch Bending
-    const stickY = gp.axes[1] || 0;
-    if (stickY <= -0.75) raw.stickSemis = 2;
-    else if (stickY < -0.28) raw.stickSemis = 1;
-    else if (stickY >= 0.75) raw.stickSemis = -2;
-    else if (stickY > 0.28) raw.stickSemis = -1;
-
-    // Analog Stick Horizontal Vibrato (Left or Right tilt)
-    const stickX = gp.axes[0] || 0;
-    raw.stickXVal = stickX;
-    if (Math.abs(stickX) > 0.25) {
-      raw.vibrato = true;
+    const deadzone = 0.08;
+    const axX = Math.abs(gp.axes[0]) > deadzone ? gp.axes[0] : 0;
+    const axY = Math.abs(gp.axes[1]) > deadzone ? gp.axes[1] : 0;
+    if (axX !== 0 || axY !== 0) {
+      raw.stickX = axX;
+      raw.stickY = axY;
+      if (Math.abs(axX) > 0.3) raw.vibrato = true;
     }
   }
 
   updateControllerSVG(raw);
 
-  // Active Button Priority (X > Y > A > R > L)
   let activeBtn = null;
   if (raw.X) activeBtn = 'X';
   else if (raw.Y) activeBtn = 'Y';
@@ -636,54 +957,66 @@ function pollInput() {
   else if (raw.R) activeBtn = 'R';
   else if (raw.L) activeBtn = 'L';
 
-  let semitoneOffset = 0;
-  let actionTokens = [];
+  let dpadSemis = 0;
+  if (raw.dUp) dpadSemis += 1;
+  if (raw.dDown) dpadSemis -= 1;
 
-  if (raw.dUp) { semitoneOffset += 1; actionTokens.push("+ ▲ D-Pad"); }
-  if (raw.dDown) { semitoneOffset -= 1; actionTokens.push("+ ▼ D-Pad"); }
+  let stickDir = null;
+  if (raw.stickY <= -0.7) stickDir = 'up-full';
+  else if (raw.stickY <= -0.25) stickDir = 'up-half';
+  else if (raw.stickY >= 0.7) stickDir = 'down-full';
+  else if (raw.stickY >= 0.25) stickDir = 'down-half';
 
-  if (raw.stickSemis === 1) { semitoneOffset += 1; actionTokens.push("+ ⮝ Stick ½"); }
-  else if (raw.stickSemis === 2) { semitoneOffset += 2; actionTokens.push("+ ⮝⮝ Stick Full"); }
-  else if (raw.stickSemis === -1) { semitoneOffset -= 1; actionTokens.push("+ ⮟ Stick ½"); }
-  else if (raw.stickSemis === -2) { semitoneOffset -= 2; actionTokens.push("+ ⮟⮟ Stick Full"); }
+  const analogBendCents = -raw.stickY * 200;
+  const totalDetuneCents = (dpadSemis * 100) + analogBendCents;
 
-  if (raw.vibrato) {
-    actionTokens.push("+ &sim; Vib");
-  }
+  let displayTokens = [];
+  let pdfTokens = [];
 
-  const comboDisplay = actionTokens.length > 0 ? actionTokens.join("<br>") : "(Just Press)";
-  const comboPlain = actionTokens.length > 0 ? actionTokens.join(" ") : "(Just Press)";
+  if (dpadSemis === 1) { displayTokens.push("D-Pad ▲"); pdfTokens.push("D-PAD UP"); }
+  if (dpadSemis === -1) { displayTokens.push("D-Pad ▼"); pdfTokens.push("D-PAD DN"); }
+  if (stickDir === 'up-full') { displayTokens.push("Stick ⮝ Full"); pdfTokens.push("STICK UP FULL"); }
+  else if (stickDir === 'up-half') { displayTokens.push("Stick ⮝ ½"); pdfTokens.push("STICK UP HALF"); }
+  else if (stickDir === 'down-full') { displayTokens.push("Stick ⮟ Full"); pdfTokens.push("STICK DN FULL"); }
+  else if (stickDir === 'down-half') { displayTokens.push("Stick ⮟ ½"); pdfTokens.push("STICK DN HALF"); }
+  if (raw.vibrato) { displayTokens.push("Vibrato"); pdfTokens.push("VIBRATO"); }
+
+  const comboPlain = displayTokens.length > 0 ? "+ " + displayTokens.join(" + ") : "(Natural)";
+  const pdfModifier = pdfTokens.length > 0 ? pdfTokens.join(" + ") : "NATURAL";
 
   if (activeBtn) {
     const base = BASE_PITCHES[activeBtn];
-    const finalMidi = base.midi + semitoneOffset;
-    const finalNoteName = midiToName(finalMidi);
+    const soundingMidi = base.midi + (totalDetuneCents / 100);
+    const finalNoteName = midiToName(soundingMidi);
 
-    const hasChanged = !currentNoteState || currentNoteState.btn !== activeBtn || 
-                       currentNoteState.offset !== semitoneOffset || currentNoteState.vibrato !== raw.vibrato;
+    const hasButtonChanged = !currentNoteState || currentNoteState.btn !== activeBtn;
 
-    if (hasChanged) {
+    if (hasButtonChanged) {
       if (isRecording && activeRecordedNote) commitActiveNote();
 
-      currentNoteState = { btn: activeBtn, offset: semitoneOffset, vibrato: raw.vibrato, midi: finalMidi };
-      startNote(finalMidi, raw.vibrato);
+      currentNoteState = { btn: activeBtn, baseMidi: base.midi };
+      startNote(base.midi, totalDetuneCents, raw.vibrato);
 
       if (isRecording) {
         activeRecordedNote = {
           button: activeBtn,
-          comboDisplay: comboDisplay,
-          comboPlain: comboPlain,
+          dpad: dpadSemis,
+          stickDir: stickDir,
           hasVibrato: raw.vibrato,
+          comboPlain: comboPlain,
+          pdfMod: pdfModifier,
           pitch: finalNoteName,
-          midi: finalMidi,
+          midi: base.midi + Math.round(totalDetuneCents / 100),
           startTime: (performance.now() - recordStartTime) / 1000
         };
       }
+    } else {
+      updateContinuousPitchBend(totalDetuneCents);
     }
 
     document.getElementById('mon-pitch').innerText = finalNoteName;
-    document.getElementById('mon-action').innerText = `${activeBtn} ${comboPlain}`;
-    document.getElementById('mon-expr').innerText = raw.vibrato ? "Vibrato (Active)" : "Clean";
+    document.getElementById('mon-detune').innerText = `${Math.round(totalDetuneCents)} cents`;
+    document.getElementById('mon-expr').innerText = raw.vibrato ? "Vibrato (Active)" : "Smooth Bend";
   } else {
     if (currentNoteState !== null) {
       stopNote();
@@ -691,7 +1024,7 @@ function pollInput() {
       if (isRecording && activeRecordedNote) commitActiveNote();
     }
     document.getElementById('mon-pitch').innerText = "---";
-    document.getElementById('mon-action').innerText = "Idle";
+    document.getElementById('mon-detune').innerText = `${Math.round(totalDetuneCents)} cents`;
     document.getElementById('mon-expr').innerText = raw.vibrato ? "Vibrato Ready" : "None";
   }
 
@@ -726,25 +1059,14 @@ function updateControllerSVG(raw) {
 
   const thumb = document.getElementById('pad-stick-thumb');
   if (thumb) {
-    let cy = 0;
-    if (raw.stickSemis === 2) cy = -14;
-    else if (raw.stickSemis === 1) cy = -7;
-    else if (raw.stickSemis === -1) cy = 7;
-    else if (raw.stickSemis === -2) cy = 14;
-
-    let cx = 0;
-    if (raw.stickXVal && Math.abs(raw.stickXVal) > 0.25) {
-      cx = raw.stickXVal * 12;
-    } else if (raw.vibrato) {
-      cx = 8;
-    }
-
-    thumb.setAttribute('cy', cy);
-    thumb.setAttribute('cx', cx);
+    const pxX = raw.stickX * 15;
+    const pxY = raw.stickY * 15;
+    thumb.setAttribute('cx', pxX);
+    thumb.setAttribute('cy', pxY);
 
     if (raw.vibrato) {
       thumb.className.baseVal = "vibrato-active";
-    } else if (raw.stickSemis !== 0) {
+    } else if (Math.hypot(raw.stickX, raw.stickY) > 0.15) {
       thumb.className.baseVal = "stick-active";
     } else {
       thumb.className.baseVal = "";
@@ -785,44 +1107,63 @@ function loadFromTextInput() {
 
     let offset = 0;
     let comboTokens = [];
-    let hasVib = false;
+    let pdfTokens = [];
 
+    let dpad = 0;
     if (tok.includes('+D^') || tok.includes('#') || tok.includes('+▲')) {
+      dpad = 1;
       offset += 1;
-      comboTokens.push("+ ▲ D-Pad");
+      comboTokens.push("D-Pad ▲");
+      pdfTokens.push("D-PAD UP");
     } else if (tok.includes('+DV') || tok.includes('B') || tok.includes('+▼')) {
+      dpad = -1;
       offset -= 1;
-      comboTokens.push("+ ▼ D-Pad");
+      comboTokens.push("D-Pad ▼");
+      pdfTokens.push("D-PAD DN");
     }
 
+    let stickDir = null;
     if (tok.includes('^^') || tok.includes('UU')) {
+      stickDir = 'up-full';
       offset += 2;
-      comboTokens.push("+ ⮝⮝ Stick Full");
+      comboTokens.push("Stick ⮝ Full");
+      pdfTokens.push("STICK UP FULL");
     } else if (tok.includes('^') || tok.includes('U')) {
+      stickDir = 'up-half';
       offset += 1;
-      comboTokens.push("+ ⮝ Stick ½");
+      comboTokens.push("Stick ⮝ ½");
+      pdfTokens.push("STICK UP HALF");
     } else if (tok.includes('VV') || tok.includes('DD')) {
+      stickDir = 'down-full';
       offset -= 2;
-      comboTokens.push("+ ⮟⮟ Stick Full");
+      comboTokens.push("Stick ⮟ Full");
+      pdfTokens.push("STICK DN FULL");
     } else if (tok.includes('V') || tok.includes('D')) {
+      stickDir = 'down-half';
       offset -= 1;
-      comboTokens.push("+ ⮟ Stick ½");
+      comboTokens.push("Stick ⮟ ½");
+      pdfTokens.push("STICK DN HALF");
     }
 
+    let hasVib = false;
     if (tok.includes('~') || tok.includes('VIB')) {
       hasVib = true;
-      comboTokens.push("+ &sim; Vib");
+      comboTokens.push("Vibrato");
+      pdfTokens.push("VIBRATO");
     }
 
     const base = BASE_PITCHES[btn];
     const finalMidi = base.midi + offset;
     const pitch = midiToName(finalMidi);
+    const comboPlain = comboTokens.length > 0 ? "+ " + comboTokens.join(" + ") : "(Natural)";
 
     parsed.push({
       button: btn,
-      comboDisplay: comboTokens.length > 0 ? comboTokens.join("<br>") : "(Just Press)",
-      comboPlain: comboTokens.length > 0 ? comboTokens.join(" ") : "(Just Press)",
+      dpad: dpad,
+      stickDir: stickDir,
       hasVibrato: hasVib,
+      comboPlain: comboPlain,
+      pdfMod: pdfTokens.length > 0 ? pdfTokens.join(" + ") : "NATURAL",
       pitch: pitch,
       midi: finalMidi,
       startTime: currentTime,
@@ -835,7 +1176,7 @@ function loadFromTextInput() {
     recordedEvents = parsed;
     renderSheetMusic();
     document.getElementById('btn-play').disabled = false;
-    document.getElementById('btn-pdf').disabled = false;
+    document.getElementById('btn-open-preview').disabled = false;
   }
 }
 
@@ -868,7 +1209,7 @@ function toggleRecord() {
     btn.innerHTML = `<span style="font-size:15px;">■</span> Stop Recording`;
     btn.className = "btn-danger";
     document.getElementById('btn-play').disabled = true;
-    document.getElementById('btn-pdf').disabled = true;
+    document.getElementById('btn-open-preview').disabled = true;
     renderSheetMusic();
   } else {
     isRecording = false;
@@ -876,7 +1217,7 @@ function toggleRecord() {
     btn.innerHTML = `<span style="font-size:15px;">&bull;</span> Record Live`;
     btn.className = "btn-danger";
     document.getElementById('btn-play').disabled = recordedEvents.length === 0;
-    document.getElementById('btn-pdf').disabled = recordedEvents.length === 0;
+    document.getElementById('btn-open-preview').disabled = recordedEvents.length === 0;
   }
 }
 
@@ -886,7 +1227,7 @@ function clearSong() {
   activeRecordedNote = null;
   document.getElementById('clock').innerText = "00:00.0";
   document.getElementById('btn-play').disabled = true;
-  document.getElementById('btn-pdf').disabled = true;
+  document.getElementById('btn-open-preview').disabled = true;
   renderSheetMusic();
 }
 
@@ -905,42 +1246,43 @@ async function playSong() {
       await new Promise(r => setTimeout(r, restDelay * 1000));
     }
 
-    const mock = { L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickSemis: 0, vibrato: item.hasVibrato, stickXVal: 0 };
+    let stickY = 0;
+    let dUp = (item.dpad === 1);
+    let dDown = (item.dpad === -1);
+    if (!item.dpad) {
+      if (item.comboPlain.includes('▲')) dUp = true;
+      if (item.comboPlain.includes('▼')) dDown = true;
+    }
+
+    if (item.stickDir === 'up-full' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('Full') && item.comboPlain.includes('⮝'))) stickY = -1.0;
+    else if (item.stickDir === 'up-half' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('½') && item.comboPlain.includes('⮝'))) stickY = -0.5;
+    else if (item.stickDir === 'down-full' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('Full') && item.comboPlain.includes('⮟'))) stickY = 1.0;
+    else if (item.stickDir === 'down-half' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('½') && item.comboPlain.includes('⮟'))) stickY = 0.5;
+
+    const mock = { L: false, R: false, A: false, X: false, Y: false, dUp, dDown, stickX: 0, stickY, vibrato: item.hasVibrato };
     mock[item.button] = true;
-    if (item.comboPlain.includes('▲')) mock.dUp = true;
-    if (item.comboPlain.includes('▼')) mock.dDown = true;
-    if (item.comboPlain.includes('⮝ Stick ½')) mock.stickSemis = 1;
-    if (item.comboPlain.includes('⮝⮝ Stick Full')) mock.stickSemis = 2;
-    if (item.comboPlain.includes('⮟ Stick ½')) mock.stickSemis = -1;
-    if (item.comboPlain.includes('⮟⮟ Stick Full')) mock.stickSemis = -2;
     updateControllerSVG(mock);
 
     document.getElementById('mon-pitch').innerText = item.pitch;
-    document.getElementById('mon-action').innerText = `${item.button} ${item.comboPlain}`;
-    document.getElementById('mon-expr').innerText = item.hasVibrato ? "Vibrato" : "Clean";
+    document.getElementById('mon-detune').innerText = `${Math.round(-stickY * 200 + (dUp ? 100 : dDown ? -100 : 0))} cents`;
+    document.getElementById('mon-expr').innerText = item.hasVibrato ? "Vibrato" : "Playing";
 
-    startNote(item.midi, item.hasVibrato);
+    startNote(item.midi, 0, item.hasVibrato);
     await new Promise(r => setTimeout(r, item.duration * 1000));
     stopNote();
 
-    updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickSemis: 0, vibrato: false, stickXVal: 0 });
+    updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
     playheadTime = item.startTime + item.duration;
   }
 
   document.getElementById('mon-pitch').innerText = "---";
-  document.getElementById('mon-action').innerText = "Idle";
+  document.getElementById('mon-detune').innerText = "0 cents";
   document.getElementById('mon-expr').innerText = "None";
   isPlaying = false;
   document.getElementById('btn-play').disabled = false;
   document.getElementById('btn-record').disabled = false;
 }
 
-
-/**
- * ==============================================================================
- * MODULE 6: NON-MUSICIAN WEB SHEET MUSIC RENDERER
- * ==============================================================================
- */
 function renderSheetMusic() {
   const container = document.getElementById('sheet-music');
   if (recordedEvents.length === 0) {
@@ -953,9 +1295,27 @@ function renderSheetMusic() {
     const card = document.createElement('div');
     card.className = "note-card";
     const bg = BASE_PITCHES[n.button]?.color || "#334155";
+
+    // Build visual icons for modifiers
+    let icons = [];
+    if (n.dpad === 1) icons.push(getDpadSvg('up', 22));
+    if (n.dpad === -1) icons.push(getDpadSvg('down', 22));
+    if (n.stickDir === 'up-full') icons.push(getStickSvg('up', 'full', 22));
+    if (n.stickDir === 'up-half') icons.push(getStickSvg('up', 'half', 22));
+    if (n.stickDir === 'down-full') icons.push(getStickSvg('down', 'full', 22));
+    if (n.stickDir === 'down-half') icons.push(getStickSvg('down', 'half', 22));
+    if (n.hasVibrato) icons.push(getStickSvg('vibrato', 'none', 22));
+
+    const iconRow = icons.length > 0 
+      ? `<div class="combo-icon-row">${icons.join('')}</div>`
+      : `<div class="combo-icon-placeholder"></div>`;
+
     card.innerHTML = `
       <div class="badge-icon" style="background:${bg}">${n.button}</div>
-      <div class="card-combo">${n.comboDisplay}</div>
+      <div class="card-combo">
+        ${iconRow}
+        <div class="combo-text ${icons.length === 0 ? 'natural-text' : ''}">${n.comboPlain}</div>
+      </div>
       <div class="card-pitch">${n.pitch}</div>
     `;
     container.appendChild(card);
@@ -966,9 +1326,246 @@ function renderSheetMusic() {
 
 /**
  * ==============================================================================
- * MODULE 7: VECTOR PDF EXPORT (NON-MUSICIAN ACTION SHEET)
+ * MODULE 6: HIGH-DPI CANVAS RENDERER FOR LIVE PREVIEW & PNG EXPORT
  * ==============================================================================
  */
+function drawCanvasDpad(ctx, cx, cy, dir, size = 13) {
+  const isUp = dir === 'up';
+  const isDown = dir === 'down';
+  const half = size / 2;
+  const armW = size * 0.38;
+  const armHalf = armW / 2;
+
+  ctx.fillStyle = "#334155";
+  ctx.fillRect(cx - armHalf, cy - half, armW, size);
+  ctx.fillRect(cx - half, cy - armHalf, size, armW);
+
+  ctx.fillStyle = "#ca8a04";
+  if (isUp) {
+    ctx.fillRect(cx - armHalf, cy - half, armW, half - armHalf);
+  } else if (isDown) {
+    ctx.fillRect(cx - armHalf, cy + armHalf, armW, half - armHalf);
+  }
+}
+
+function drawCanvasStick(ctx, cx, cy, dir, intensity, size = 13) {
+  const r = size / 2;
+  ctx.strokeStyle = "#475569";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "#0f172a";
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  let nubY = cy;
+  let nubColor = "#0284c7";
+  if (dir === 'up') {
+    nubY = cy - (intensity === 'full' ? r * 0.6 : r * 0.35);
+  } else if (dir === 'down') {
+    nubY = cy + (intensity === 'full' ? r * 0.6 : r * 0.35);
+  } else if (dir === 'vibrato') {
+    nubColor = "#a855f7";
+  }
+
+  ctx.fillStyle = nubColor;
+  ctx.beginPath();
+  ctx.arc(cx, nubY, r * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawSheetToCanvas(canvas, events, scale = 2) {
+  const baseWidth = 612; // Standard Letter width (points)
+  const maxPerRow = 8;
+  const rows = Math.ceil(events.length / maxPerRow);
+  const cardHeight = 78;
+  const rowSpacing = 14;
+  const topMargin = 160;
+  const bottomMargin = 40;
+  
+  const calculatedHeight = Math.max(792, topMargin + (rows * (cardHeight + rowSpacing)) + bottomMargin);
+
+  canvas.width = baseWidth * scale;
+  canvas.height = calculatedHeight * scale;
+  canvas.style.width = `${baseWidth}px`;
+  canvas.style.height = `${calculatedHeight}px`;
+
+  const ctx = canvas.getContext('2d');
+  ctx.save();
+  ctx.scale(scale, scale);
+
+  // Background Paper
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, baseWidth, calculatedHeight);
+
+  // Title Header
+  ctx.fillStyle = "#181e2e";
+  ctx.font = "bold 21px Helvetica, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("OCARINA ACTION TABLATURE SHEET", baseWidth / 2, 46);
+
+  // Subtitle
+  ctx.fillStyle = "#64748b";
+  ctx.font = "9px Helvetica, Arial, sans-serif";
+  ctx.fillText(`Total Notes: ${events.length}   |   Tuning: Switch 2 (2026) Standard   |   Date: ${new Date().toLocaleDateString()}`, baseWidth / 2, 65);
+
+  // Divider Line
+  ctx.strokeStyle = "#dae1e9";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(40, 78);
+  ctx.lineTo(baseWidth - 40, 78);
+  ctx.stroke();
+
+  // Instructions Box
+  ctx.fillStyle = "#f8fafc";
+  ctx.strokeStyle = "#e2e8f0";
+  ctx.lineWidth = 1;
+  drawRoundedRect(ctx, 40, 92, baseWidth - 80, 52, 6, true, true);
+
+  ctx.fillStyle = "#1e293b";
+  ctx.font = "bold 9.5px Helvetica, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("HOW TO PLAY THIS SHEET:", 52, 108);
+
+  ctx.fillStyle = "#475569";
+  ctx.font = "8px Helvetica, Arial, sans-serif";
+  ctx.fillText("• Primary Circle: Face button to tap ([L] = Low D, [R] = F, [A] = A, [Y] = B, [X] = High D)", 52, 122);
+  ctx.fillText("• Modifier Icons: Hold D-Pad UP/DN (+/-1) or tilt Left Stick (HALF = +/-1, FULL = +/-2, VIBRATO)", 52, 134);
+
+  // Action Cards Grid
+  const cardWidth = 56;
+  const marginX = 40;
+  const gapX = (baseWidth - (marginX * 2) - (maxPerRow * cardWidth)) / (maxPerRow - 1);
+  let y = 166;
+  let col = 0;
+
+  events.forEach((note) => {
+    const x = marginX + (col * (cardWidth + gapX));
+
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 0.75;
+    drawRoundedRect(ctx, x, y, cardWidth, cardHeight, 5, true, true);
+
+    // Button Badge Circle
+    const badgeRgb = BASE_PITCHES[note.button]?.hex || [100, 116, 139];
+    ctx.fillStyle = `rgb(${badgeRgb[0]}, ${badgeRgb[1]}, ${badgeRgb[2]})`;
+    ctx.beginPath();
+    ctx.arc(x + cardWidth / 2, y + 17, 10.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Button Letter
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 11px Helvetica, Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(note.button, x + cardWidth / 2, y + 21);
+
+    // Render Canvas Vector Icons
+    let iconList = [];
+    if (note.dpad === 1) iconList.push({ type: 'dpad', dir: 'up' });
+    if (note.dpad === -1) iconList.push({ type: 'dpad', dir: 'down' });
+    if (note.stickDir) iconList.push({ type: 'stick', dir: note.stickDir.startsWith('up') ? 'up' : 'down', intensity: note.stickDir.endsWith('full') ? 'full' : 'half' });
+    if (note.hasVibrato) iconList.push({ type: 'stick', dir: 'vibrato' });
+
+    const iconY = y + 37;
+    if (iconList.length > 0) {
+      const totalW = iconList.length * 15;
+      let startX = (x + cardWidth / 2) - (totalW / 2) + 7.5;
+      iconList.forEach(ic => {
+        if (ic.type === 'dpad') drawCanvasDpad(ctx, startX, iconY, ic.dir, 13);
+        else drawCanvasStick(ctx, startX, iconY, ic.dir, ic.intensity, 13);
+        startX += 15;
+      });
+    }
+
+    // Modifier Text below icon
+    ctx.font = "bold 6.2px Helvetica, Arial, sans-serif";
+    ctx.textAlign = "center";
+    if (note.pdfMod && note.pdfMod !== "NATURAL") {
+      ctx.fillStyle = "#c2410c";
+      ctx.fillText(note.pdfMod, x + cardWidth / 2, y + 53);
+    } else {
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("NATURAL", x + cardWidth / 2, y + 53);
+    }
+
+    // Pitch Name at bottom
+    ctx.fillStyle = "#1e293b";
+    ctx.font = "bold 8.5px Helvetica, Arial, sans-serif";
+    const cleanPitch = note.pitch.replace("♯", "#").replace("♭", "b");
+    ctx.fillText(cleanPitch, x + cardWidth / 2, y + 69);
+
+    col++;
+    if (col >= maxPerRow) {
+      col = 0;
+      y += cardHeight + rowSpacing;
+    }
+  });
+
+  ctx.restore();
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke) {
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(x, y, width, height, radius);
+  } else {
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + width, y, x + width, y + height, radius);
+    ctx.arcTo(x + width, y + height, x, y + height, radius);
+    ctx.arcTo(x, y + height, x, y, radius);
+    ctx.arcTo(x, y, x + width, y, radius);
+    ctx.closePath();
+  }
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+
+/**
+ * ==============================================================================
+ * MODULE 7: MODAL CONTROLLER & MULTI-FORMAT EXPORTS (PDF, PNG, PRINT)
+ * ==============================================================================
+ */
+function openExportModal() {
+  if (recordedEvents.length === 0) return;
+  const modal = document.getElementById('export-modal');
+  const canvas = document.getElementById('sheet-preview-canvas');
+  drawSheetToCanvas(canvas, recordedEvents, 2);
+  modal.style.display = 'flex';
+}
+
+function closeExportModal() {
+  const modal = document.getElementById('export-modal');
+  modal.style.display = 'none';
+}
+
+function downloadPNG() {
+  const canvas = document.getElementById('sheet-preview-canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = "ocarina_action_sheet.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+}
+
+function printSheet() {
+  const canvas = document.getElementById('sheet-preview-canvas');
+  if (!canvas) return;
+  const imgData = canvas.toDataURL("image/png");
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+      <head><title>Print Ocarina Tablature</title></head>
+      <body style="margin:0; display:flex; justify-content:center; align-items:center; background:#fff;">
+        <img src="${imgData}" style="max-width:100%; height:auto;" onload="window.print();window.close();"/>
+      </body>
+    </html>
+  `);
+  win.document.close();
+}
+
 function exportPDF() {
   if (recordedEvents.length === 0) return;
   const { jsPDF } = window.jspdf;
@@ -978,85 +1575,119 @@ function exportPDF() {
   let y = 46;
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(21);
+  doc.setTextColor(24, 30, 46);
   doc.text("OCARINA ACTION TABLATURE SHEET", pageWidth / 2, y, { align: "center" });
 
   y += 18;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 116, 139);
-  doc.text(`Total Notes: ${recordedEvents.length}   |   Tuning: Switch 2 (2026)   |   Exported: ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: "center" });
-
-  y += 18;
-  doc.setDrawColor(203, 213, 225);
-  doc.line(40, y, pageWidth - 40, y);
-
-  y += 18;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(15, 23, 42);
-  doc.text("HOW TO PLAY THIS SHEET:", 42, y);
-
-  y += 14;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.text("• Primary Circle: Press that button ( [L]=Low D, [R]=F, [A]=A, [Y]=B, [X]=High D )", 42, y);
-  y += 12;
-  doc.text("• Modifier: Hold D-Pad (▲/▼ for +/-1) or tilt Left Stick (Half for +/-1, Full for +/-2, Left/Right for Vibrato)", 42, y);
+  doc.text(`Total Notes: ${recordedEvents.length}   |   Tuning: Switch 2 (2026) Standard   |   Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: "center" });
 
   y += 16;
+  doc.setDrawColor(218, 225, 233);
+  doc.setLineWidth(1.2);
   doc.line(40, y, pageWidth - 40, y);
 
-  y += 28;
-  const cardWidth = 54;
-  const cardHeight = 72;
+  y += 16;
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(40, y, pageWidth - 80, 52, 6, 6, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(30, 41, 59);
+  doc.text("HOW TO PLAY THIS SHEET:", 52, y + 16);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  doc.text("• Primary Circle: Face button to tap ([L] = Low D, [R] = F, [A] = A, [Y] = B, [X] = High D)", 52, y + 30);
+  doc.text("• Modifier Icons: Hold D-Pad UP/DN (+/-1) or tilt Left Stick (HALF = +/-1, FULL = +/-2, VIBRATO)", 52, y + 42);
+
+  y += 66;
+
+  const cardWidth = 56;
+  const cardHeight = 78;
   const marginX = 40;
-  const maxPerRow = 9;
+  const maxPerRow = 8;
   const gapX = (pageWidth - (marginX * 2) - (maxPerRow * cardWidth)) / (maxPerRow - 1);
 
   let col = 0;
+
   recordedEvents.forEach((note) => {
     const x = marginX + (col * (cardWidth + gapX));
 
     doc.setDrawColor(203, 213, 225);
-    doc.setFillColor(248, 250, 252);
+    doc.setLineWidth(0.75);
+    doc.setFillColor(255, 255, 255);
     doc.roundedRect(x, y, cardWidth, cardHeight, 5, 5, "FD");
 
+    // Face Button Circle
     const badgeRgb = BASE_PITCHES[note.button]?.hex || [100, 116, 139];
     doc.setFillColor(badgeRgb[0], badgeRgb[1], badgeRgb[2]);
-    doc.circle(x + cardWidth / 2, y + 20, 12, "F");
+    doc.circle(x + cardWidth / 2, y + 17, 10.5, "F");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(255, 255, 255);
-    doc.text(note.button, x + cardWidth / 2, y + 24.5, { align: "center" });
+    doc.text(note.button, x + cardWidth / 2, y + 21, { align: "center" });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.setTextColor(180, 83, 9);
+    // Vector Icon Drawing in PDF
+    let iconList = [];
+    if (note.dpad === 1) iconList.push({ type: 'dpad', dir: 'up' });
+    if (note.dpad === -1) iconList.push({ type: 'dpad', dir: 'down' });
+    if (note.stickDir) iconList.push({ type: 'stick', dir: note.stickDir.startsWith('up') ? 'up' : 'down', intensity: note.stickDir.endsWith('full') ? 'full' : 'half' });
+    if (note.hasVibrato) iconList.push({ type: 'stick', dir: 'vibrato' });
 
-    let actionLabel = note.comboPlain.replace(/\(Just Press\)/, "Natural");
-    if (actionLabel.length > 10) {
-      const parts = actionLabel.split("+").filter(p => p.trim());
-      if (parts.length > 0) {
-        doc.text("+" + parts[0].trim(), x + cardWidth / 2, y + 42, { align: "center" });
-        if (parts[1]) doc.text("+" + parts[1].trim(), x + cardWidth / 2, y + 50, { align: "center" });
-      }
-    } else {
-      doc.text(actionLabel, x + cardWidth / 2, y + 45, { align: "center" });
+    const iconY = y + 37;
+    if (iconList.length > 0) {
+      const totalW = iconList.length * 15;
+      let startX = (x + cardWidth / 2) - (totalW / 2) + 7.5;
+      iconList.forEach(ic => {
+        if (ic.type === 'dpad') {
+          doc.setFillColor(51, 65, 85);
+          doc.rect(startX - 2, iconY - 5.5, 4, 11, 'F');
+          doc.rect(startX - 5.5, iconY - 2, 11, 4, 'F');
+          doc.setFillColor(202, 138, 4);
+          if (ic.dir === 'up') doc.rect(startX - 2, iconY - 5.5, 4, 3.5, 'F');
+          else if (ic.dir === 'down') doc.rect(startX - 2, iconY + 2, 4, 3.5, 'F');
+        } else {
+          doc.setDrawColor(71, 85, 105);
+          doc.setLineWidth(0.8);
+          doc.circle(startX, iconY, 5.5, 'S');
+          doc.setFillColor(ic.dir === 'vibrato' ? 168 : 2, ic.dir === 'vibrato' ? 85 : 132, ic.dir === 'vibrato' ? 247 : 199);
+          const nubY = ic.dir === 'up' ? (iconY - (ic.intensity === 'full' ? 3.2 : 1.8)) : ic.dir === 'down' ? (iconY + (ic.intensity === 'full' ? 3.2 : 1.8)) : iconY;
+          doc.circle(startX, nubY, 2.5, 'F');
+        }
+        startX += 15;
+      });
     }
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text(note.pitch, x + cardWidth / 2, y + 64, { align: "center" });
+    // Modifier text
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.2);
+    if (note.pdfMod && note.pdfMod !== "NATURAL") {
+      doc.setTextColor(194, 65, 12);
+      doc.text(note.pdfMod, x + cardWidth / 2, y + 53, { align: "center" });
+    } else {
+      doc.setTextColor(148, 163, 184);
+      doc.text("NATURAL", x + cardWidth / 2, y + 53, { align: "center" });
+    }
+
+    // Pitch Name
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(30, 41, 59);
+    const cleanPitch = note.pitch.replace("♯", "#").replace("♭", "b");
+    doc.text(cleanPitch, x + cardWidth / 2, y + 69, { align: "center" });
 
     col++;
     if (col >= maxPerRow) {
       col = 0;
       y += cardHeight + 14;
-      if (y > 710) {
+      if (y > 700) {
         doc.addPage();
         y = 46;
       }
