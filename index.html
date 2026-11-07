@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- html2canvas for Crisp DOM-to-Image / PDF Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- jsPDF for Vector Client-Side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- soundfont-player for Authentic General MIDI Ocarina -->
@@ -137,15 +139,15 @@
     /* Non-Musician Tablature Display */
     .sheet-container {
       background: #080a0f; border-radius: 8px; border: 1px solid var(--panel-border); padding: 16px;
-      min-height: 190px; max-height: 290px; overflow-y: auto; display: flex; flex-wrap: wrap;
+      min-height: 180px; max-height: 270px; overflow-y: auto; display: flex; flex-wrap: wrap;
       gap: 12px; align-content: flex-start;
     }
-    .sheet-empty { width: 100%; text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 75px; }
+    .sheet-empty { width: 100%; text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 65px; }
 
     .note-card {
       background: #192030; border-radius: 8px; border: 1px solid #36445f;
       padding: 10px 8px; display: flex; flex-direction: column; align-items: center;
-      gap: 6px; min-width: 90px; animation: popIn 0.15s ease;
+      gap: 5px; min-width: 84px; animation: popIn 0.15s ease;
     }
     @keyframes popIn { 0% { transform: scale(0.75); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -155,30 +157,17 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.5);
     }
     .card-combo {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; min-height: 42px; width: 100%;
+      font-size: 10px; font-weight: 700; color: var(--gold-highlight); text-align: center;
+      min-height: 24px; display: flex; align-items: center; justify-content: center; line-height: 1.25;
     }
-    .combo-icon-row {
-      display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 22px;
-    }
-    .combo-icon-placeholder {
-      min-height: 22px;
-    }
-    .combo-text {
-      font-size: 9.5px; font-weight: 700; color: var(--gold-highlight); text-align: center;
-      line-height: 1.2; word-break: break-word;
-    }
-    .combo-text.natural-text {
-      color: #64748b; font-weight: 500; font-style: italic;
-    }
-    .card-pitch { font-size: 11px; font-weight: 700; color: #cbd5e1; }
+    .card-pitch { font-size: 10px; font-weight: 600; color: #64748b; }
 
     textarea {
       width: 100%; height: 60px; background: #080a0f; border: 1px solid var(--panel-border);
       border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 13px; resize: vertical;
     }
     textarea:focus { outline: 1px solid var(--accent-cyan); }
-    .guide-box { font-size: 11px; line-height: 1.6; color: var(--text-muted); }
+    .guide-box { font-size: 11px; line-height: 1.5; color: var(--text-muted); }
     .guide-box code { color: var(--gold-highlight); background: #080a0f; padding: 1px 4px; border-radius: 4px; }
 
     /* Expanded Chromatic Fingering Reference Guide */
@@ -226,7 +215,9 @@
       margin-right: 6px;
     }
 
-    /* Modal Styles */
+    /* ==========================================================================
+       MODAL STYLES (Sheet Music Big Preview & Multi-Format Exports)
+       ========================================================================== */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -287,12 +278,154 @@
       justify-content: center;
       align-items: flex-start;
     }
-    #sheet-preview-canvas {
-      box-shadow: 0 10px 35px rgba(0,0,0,0.65);
-      border-radius: 4px;
-      max-width: 100%;
-      height: auto;
+    .combo-icon-row { display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .combo-text { font-weight: 700; color: var(--gold-highlight); text-align: center; line-height: 1.2; }
+    .combo-text.natural-text { color: #64748b; font-weight: 500; font-style: italic; }
+
+    /* ==========================================================================
+       BEAUTIFUL HTML SHEET MUSIC PAPER (Rendered inside Modal & Captured)
+       ========================================================================== */
+    .printable-sheet {
+      width: 740px;
+      min-height: 520px;
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 8px;
+      padding: 40px 44px;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.75);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      border-top: 8px solid #ca8a04;
     }
+    .sheet-header {
+      text-align: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 16px;
+    }
+    .sheet-header h1 {
+      font-family: 'Cinzel Decorative', 'Cinzel', serif;
+      font-size: 26px;
+      font-weight: 900;
+      color: #1e293b;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .sheet-meta {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+    }
+    .sheet-legend {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid #3b82f6;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .sheet-legend b { color: #0f172a; }
+    
+    /* Dynamic Grid that centers and sizes cards nicely whether there are 2 or 32 notes */
+    .sheet-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-content: flex-start;
+      gap: 18px;
+      padding: 10px 0;
+      flex: 1;
+    }
+    .print-card {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+      position: relative;
+    }
+    .print-card-step {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #94a3b8;
+    }
+    .print-badge {
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #ffffff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.22);
+    }
+    .print-mod-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .print-mod-pill {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .print-mod-pill.active {
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fdba74;
+    }
+    .print-mod-pill.natural {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+    .print-pitch {
+      font-weight: 800;
+      color: #0f172a;
+      background: #f8fafc;
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      border-radius: 0 0 12px 12px;
+      padding: 6px 0;
+    }
+
+    /* Size Tiers based on Note Count */
+    .tier-xl .print-card { width: 185px; height: 215px; padding-top: 22px; }
+    .tier-xl .print-badge { width: 64px; height: 64px; font-size: 28px; }
+    .tier-xl .print-mod-pill { font-size: 11px; }
+    .tier-xl .print-pitch { font-size: 18px; padding: 8px 0; }
+
+    .tier-lg .print-card { width: 148px; height: 180px; padding-top: 18px; }
+    .tier-lg .print-badge { width: 50px; height: 50px; font-size: 22px; }
+    .tier-lg .print-mod-pill { font-size: 10px; }
+    .tier-lg .print-pitch { font-size: 15px; }
+
+    .tier-md .print-card { width: 118px; height: 150px; padding-top: 14px; }
+    .tier-md .print-badge { width: 40px; height: 40px; font-size: 18px; }
+    .tier-md .print-mod-pill { font-size: 9px; }
+    .tier-md .print-pitch { font-size: 13px; }
+
+    .tier-sm .print-card { width: 92px; height: 126px; padding-top: 12px; }
+    .tier-sm .print-badge { width: 32px; height: 32px; font-size: 15px; }
+    .tier-sm .print-mod-pill { font-size: 8px; padding: 2px 6px; }
+    .tier-sm .print-pitch { font-size: 11px; padding: 4px 0; }
   </style>
 </head>
 <body>
@@ -397,6 +530,7 @@
       </div>
 
       <div class="btn-row">
+        <!-- OPENS BIG DISPLAY MODAL INSTEAD OF FORCING DOWNLOAD -->
         <button id="btn-open-preview" class="btn-secondary" onclick="openExportModal()" disabled>
           👁 View &amp; Export Sheet
         </button>
@@ -414,9 +548,9 @@
       <div class="guide-box">
         <b>Quick Key:</b><br>
         &bull; <b>Buttons:</b> <code>L</code>, <code>R</code>, <code>A</code>, <code>Y</code>, <code>X</code><br>
-        &bull; <b>D-Pad:</b> <span id="quick-dpad-icons" style="display:inline-flex; align-items:center; gap:4px; vertical-align:middle;"></span> <code>+#</code> (+1) &bull; <code>+b</code> (-1)<br>
-        &bull; <b>Stick Vert:</b> <span id="quick-stick-icons" style="display:inline-flex; align-items:center; gap:4px; vertical-align:middle;"></span> <code>+^</code> / <code>+^^</code> (+1/+2) &bull; <code>+v</code> / <code>+vv</code> (-1/-2)<br>
-        &bull; <b>Stick Horiz:</b> <span id="quick-vib-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"></span> <code>+~</code> / <code>+vib</code> (Vibrato)<br>
+        &bull; <b>D-Pad:</b> <code>+#</code> (+1) &bull; <code>+b</code> (-1)<br>
+        &bull; <b>Stick Vert:</b> <code>+^</code> (+1) &bull; <code>+^^</code> (+2) &bull; <code>+v</code> (-1) &bull; <code>+vv</code> (-2)<br>
+        &bull; <b>Stick Horiz:</b> <code>+~</code> or <code>+vib</code> (Vibrato)<br>
         <i>Presets:</i>
         <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
           <button class="btn-preset" onclick="setPreset('ZeldasLullaby')">Zelda's Lullaby</button>
@@ -436,16 +570,16 @@
     </div>
   </div>
 
-  <!-- 2. EXPANDED CHROMATIC FINGERING GUIDE -->
+  <!-- 2. EXPANDED CHROMATIC FINGERING GUIDE (Positioned BELOW the visuals box with NO inner scrollbar) -->
   <div class="panel">
     <h2>Chromatic Fingering &amp; Note Guide (Click Row to Play &amp; Test)</h2>
     <div class="chart-container">
       <table class="fingering-table">
         <thead>
           <tr>
-            <th style="width: 20%;">Pitch</th>
-            <th style="width: 48%;">Primary Controller Combination</th>
-            <th style="width: 32%;">Enharmonic Alternate (Equal Tuning)</th>
+            <th style="width: 22%;">Pitch</th>
+            <th style="width: 44%;">Primary Controller Combination</th>
+            <th style="width: 34%;">Enharmonic Alternate (Equal Tuning)</th>
           </tr>
         </thead>
         <tbody id="fingering-table-body">
@@ -481,7 +615,8 @@
       </div>
     </div>
     <div class="modal-body">
-      <canvas id="sheet-preview-canvas"></canvas>
+      <!-- Crisp HTML Printable Sheet -->
+      <div id="printable-sheet" class="printable-sheet"></div>
     </div>
   </div>
 </div>
@@ -489,7 +624,7 @@
 <script>
 /**
  * ==============================================================================
- * MODULE 1: MUSIC THEORY, SVG ICON FACTORY & CHROMATIC REFERENCE
+ * MODULE 1: MUSIC THEORY & CHROMATIC REFERENCE
  * ==============================================================================
  */
 const BASE_PITCHES = {
@@ -510,36 +645,45 @@ function midiToFreq(midi) {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
-// -----------------------------------------------------------------------------
-// DEDICATED SVG ICON GENERATORS FOR D-PAD & ANALOG STICK
-// -----------------------------------------------------------------------------
-function getDpadSvg(direction = 'up', size = 20) {
+const CHROMATIC_GUIDE = [
+  { pitch: "B3", midi: 59, btn: "L", mod: "Stick Down (Full) + D-Pad Down", alt: "---", sY: 1.0, dpad: -1 },
+  { pitch: "C4", midi: 60, btn: "L", mod: "Stick Down (Full)", alt: "---", sY: 1.0, dpad: 0 },
+  { pitch: "C#4 / Db4", midi: 61, btn: "L", mod: "D-Pad Down", alt: "---", sY: 0, dpad: -1 },
+  { pitch: "D4", midi: 62, btn: "L", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
+  { pitch: "D#4 / Eb4", midi: 63, btn: "L", mod: "D-Pad Up", alt: "R + Stick Down (Full)", sY: 0, dpad: 1 },
+  { pitch: "E4", midi: 64, btn: "R", mod: "D-Pad Down", alt: "L + Stick Up (Full)", sY: 0, dpad: -1 },
+  { pitch: "F4", midi: 65, btn: "R", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
+  { pitch: "F#4 / Gb4", midi: 66, btn: "R", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1 },
+  { pitch: "G4", midi: 67, btn: "R", mod: "Stick Up (Full)", alt: "A + Stick Down (Full)", sY: -1.0, dpad: 0 },
+  { pitch: "G#4 / Ab4", midi: 68, btn: "A", mod: "D-Pad Down", alt: "R + Stick Up (Full) + D-Pad Up", sY: 0, dpad: -1 },
+  { pitch: "A4", midi: 69, btn: "A", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
+  { pitch: "A#4 / Bb4", midi: 70, btn: "A", mod: "D-Pad Up", alt: "Y + D-Pad Down", sY: 0, dpad: 1 },
+  { pitch: "B4", midi: 71, btn: "Y", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
+  { pitch: "C5", midi: 72, btn: "Y", mod: "D-Pad Up", alt: "X + Stick Down (Full)", sY: 0, dpad: 1 },
+  { pitch: "C#5 / Db5", midi: 73, btn: "X", mod: "D-Pad Down", alt: "Y + Stick Up (Full)", sY: 0, dpad: -1 },
+  { pitch: "D5", midi: 74, btn: "X", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0 },
+  { pitch: "D#5 / Eb5", midi: 75, btn: "X", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1 },
+  { pitch: "E5", midi: 76, btn: "X", mod: "Stick Up (Full)", alt: "---", sY: -1.0, dpad: 0 },
+  { pitch: "F5", midi: 77, btn: "X", mod: "Stick Up (Full) + D-Pad Up", alt: "---", sY: -1.0, dpad: 1 }
+];
+
+function getDpadSvg(direction = 'up', size = 22) {
   const isUp = direction === 'up';
   const isDown = direction === 'down';
-  const upColor = isUp ? '#facc15' : '#2a3346';
-  const downColor = isDown ? '#facc15' : '#2a3346';
-  const wingColor = '#2a3346';
-  const strokeColor = '#475569';
-  const activeStroke = '#fef08a';
-
-  return `<svg class="icon-svg dpad-icon" width="${size}" height="${size}" viewBox="0 0 24 24" style="vertical-align:middle; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));">
-    <rect x="8" y="1" width="8" height="22" rx="2" fill="#141923" stroke="${strokeColor}" stroke-width="1.2"/>
-    <rect x="1" y="8" width="22" height="8" rx="2" fill="#141923" stroke="${strokeColor}" stroke-width="1.2"/>
-    <rect x="2" y="8.5" width="6.5" height="7" fill="${wingColor}"/>
-    <rect x="15.5" y="8.5" width="6.5" height="7" fill="${wingColor}"/>
-    <rect x="8" y="8" width="8" height="8" fill="#1e2536"/>
-    <circle cx="12" cy="12" r="1.5" fill="#475569"/>
-    <!-- Up wing -->
-    <rect x="8.5" y="1.5" width="7" height="7" rx="1.5" fill="${upColor}" stroke="${isUp ? activeStroke : 'none'}" stroke-width="1"/>
+  const upColor = isUp ? '#facc15' : '#334155';
+  const downColor = isDown ? '#facc15' : '#334155';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="vertical-align:middle; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.35));">
+    <rect x="8" y="1" width="8" height="22" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.2"/>
+    <rect x="1" y="8" width="22" height="8" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.2"/>
+    <rect x="8.5" y="1.5" width="7" height="7" rx="1.2" fill="${upColor}"/>
     ${isUp ? '<polygon points="12,2.8 9.5,6.5 14.5,6.5" fill="#713f12"/>' : ''}
-    <!-- Down wing -->
-    <rect x="8.5" y="15.5" width="7" height="7" rx="1.5" fill="${downColor}" stroke="${isDown ? activeStroke : 'none'}" stroke-width="1"/>
+    <rect x="8.5" y="15.5" width="7" height="7" rx="1.2" fill="${downColor}"/>
     ${isDown ? '<polygon points="12,21.2 9.5,17.5 14.5,17.5" fill="#713f12"/>' : ''}
+    <circle cx="12" cy="12" r="1.5" fill="#64748b"/>
   </svg>`;
 }
 
-function getStickSvg(direction = 'up', intensity = 'full', size = 20) {
-  let nubX = 12;
+function getStickSvg(direction = 'up', intensity = 'full', size = 22) {
   let nubY = 12;
   let nubColor = "#06b6d4";
   let strokeColor = "#38bdf8";
@@ -547,56 +691,22 @@ function getStickSvg(direction = 'up', intensity = 'full', size = 20) {
 
   if (direction === 'up') {
     nubY = (intensity === 'full') ? 6 : 8.5;
-    glyph = (intensity === 'full') 
-      ? '<polygon points="12,3.5 9.5,6.5 14.5,6.5" fill="#ffffff"/><polygon points="12,6.8 10,9 14,9" fill="#ffffff"/>'
-      : '<polygon points="12,5.5 9.5,8.5 14.5,8.5" fill="#ffffff"/>';
+    glyph = '<polygon points="12,3.8 9.2,7.2 14.8,7.2" fill="#ffffff"/>';
   } else if (direction === 'down') {
     nubY = (intensity === 'full') ? 18 : 15.5;
-    glyph = (intensity === 'full')
-      ? '<polygon points="12,20.5 9.5,17.5 14.5,17.5" fill="#ffffff"/><polygon points="12,17.2 10,15 14,15" fill="#ffffff"/>'
-      : '<polygon points="12,18.5 9.5,15.5 14.5,15.5" fill="#ffffff"/>';
+    glyph = '<polygon points="12,20.2 9.2,16.8 14.8,16.8" fill="#ffffff"/>';
   } else if (direction === 'vibrato') {
-    nubColor = "#c084fc";
+    nubColor = "#a855f7";
     strokeColor = "#e9d5ff";
     glyph = '<path d="M 7 12 Q 9.5 9 12 12 T 17 12" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>';
-  } else {
-    nubColor = "#334155";
-    strokeColor = "#64748b";
   }
 
-  return `<svg class="icon-svg stick-icon" width="${size}" height="${size}" viewBox="0 0 24 24" style="vertical-align:middle; filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));">
-    <circle cx="12" cy="12" r="10.5" fill="#0d111a" stroke="#334155" stroke-width="1.5"/>
-    <line x1="12" y1="2" x2="12" y2="5" stroke="#475569" stroke-width="1"/>
-    <line x1="12" y1="19" x2="12" y2="22" stroke="#475569" stroke-width="1"/>
-    <line x1="2" y1="12" x2="5" y2="12" stroke="#475569" stroke-width="1"/>
-    <line x1="19" y1="12" x2="22" y2="12" stroke="#475569" stroke-width="1"/>
-    ${(direction === 'up' || direction === 'down') ? `<line x1="12" y1="12" x2="${nubX}" y2="${nubY}" stroke="${nubColor}" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>` : ''}
-    <circle cx="${nubX}" cy="${nubY}" r="5.5" fill="${nubColor}" stroke="${strokeColor}" stroke-width="1.2"/>
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="vertical-align:middle; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.35));">
+    <circle cx="12" cy="12" r="10.5" fill="#0f172a" stroke="#475569" stroke-width="1.5"/>
+    <circle cx="12" cy="${nubY}" r="5.5" fill="${nubColor}" stroke="${strokeColor}" stroke-width="1.2"/>
     ${glyph}
   </svg>`;
 }
-
-const CHROMATIC_GUIDE = [
-  { pitch: "B3", midi: 59, btn: "L", mod: "Stick Down (Full) + D-Pad Down", alt: "---", sY: 1.0, dpad: -1, stickDir: "down-full" },
-  { pitch: "C4", midi: 60, btn: "L", mod: "Stick Down (Full)", alt: "---", sY: 1.0, dpad: 0, stickDir: "down-full" },
-  { pitch: "C#4 / Db4", midi: 61, btn: "L", mod: "D-Pad Down", alt: "---", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "D4", midi: 62, btn: "L", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "D#4 / Eb4", midi: 63, btn: "L", mod: "D-Pad Up", alt: "R + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "E4", midi: 64, btn: "R", mod: "D-Pad Down", alt: "L + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "F4", midi: 65, btn: "R", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "F#4 / Gb4", midi: 66, btn: "R", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "G4", midi: 67, btn: "R", mod: "Stick Up (Full)", alt: "A + Stick Down (Full)", sY: -1.0, dpad: 0, stickDir: "up-full" },
-  { pitch: "G#4 / Ab4", midi: 68, btn: "A", mod: "D-Pad Down", alt: "R + Stick Up (Full) + D-Pad Up", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "A4", midi: 69, btn: "A", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "A#4 / Bb4", midi: 70, btn: "A", mod: "D-Pad Up", alt: "Y + D-Pad Down", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "B4", midi: 71, btn: "Y", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "C5", midi: 72, btn: "Y", mod: "D-Pad Up", alt: "X + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "C#5 / Db5", midi: 73, btn: "X", mod: "D-Pad Down", alt: "Y + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "D5", midi: 74, btn: "X", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "D#5 / Eb5", midi: 75, btn: "X", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "E5", midi: 76, btn: "X", mod: "Stick Up (Full)", alt: "---", sY: -1.0, dpad: 0, stickDir: "up-full" },
-  { pitch: "F5", midi: 77, btn: "X", mod: "Stick Up (Full) + D-Pad Up", alt: "---", sY: -1.0, dpad: 1, stickDir: "up-full" }
-];
 
 function populateFingeringTable() {
   const tbody = document.getElementById('fingering-table-body');
@@ -604,21 +714,16 @@ function populateFingeringTable() {
   CHROMATIC_GUIDE.forEach(item => {
     const tr = document.createElement('tr');
     const bg = BASE_PITCHES[item.btn]?.color || "#334155";
-    
     let icons = [];
     if (item.dpad === 1) icons.push(getDpadSvg('up', 18));
     if (item.dpad === -1) icons.push(getDpadSvg('down', 18));
-    if (item.stickDir === 'up-full') icons.push(getStickSvg('up', 'full', 18));
-    if (item.stickDir === 'down-full') icons.push(getStickSvg('down', 'full', 18));
-    const iconHtml = icons.length > 0 ? `<span style="display:inline-flex; align-items:center; gap:3px; margin:0 4px; vertical-align:middle;">${icons.join('')}</span>` : "";
+    if (item.sY < 0) icons.push(getStickSvg('up', 'full', 18));
+    if (item.sY > 0) icons.push(getStickSvg('down', 'full', 18));
+    const iconHtml = icons.length ? `<span style="display:inline-flex; gap:4px; margin:0 4px; vertical-align:middle;">${icons.join('')}</span>` : '';
 
     tr.innerHTML = `
       <td style="font-weight:700; color:#fff; font-size:14px;">${item.pitch}</td>
-      <td style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
-        <span class="pill" style="background:${bg}">${item.btn}</span>
-        ${iconHtml}
-        <span>+ ${item.mod}</span>
-      </td>
+      <td><span class="pill" style="background:${bg}">${item.btn}</span> ${iconHtml} + ${item.mod}</td>
       <td style="color:#94a3b8;">${item.alt}</td>
     `;
     tr.onclick = () => {
@@ -635,14 +740,6 @@ function populateFingeringTable() {
     };
     tbody.appendChild(tr);
   });
-
-  // Populate Quick Key Reference icons
-  const qDpad = document.getElementById('quick-dpad-icons');
-  if (qDpad) qDpad.innerHTML = getDpadSvg('up', 16) + getDpadSvg('down', 16);
-  const qStick = document.getElementById('quick-stick-icons');
-  if (qStick) qStick.innerHTML = getStickSvg('up', 'full', 16) + getStickSvg('down', 'full', 16);
-  const qVib = document.getElementById('quick-vib-icon');
-  if (qVib) qVib.innerHTML = getStickSvg('vibrato', 'none', 16);
 }
 window.addEventListener('DOMContentLoaded', populateFingeringTable);
 
@@ -961,27 +1058,22 @@ function pollInput() {
   if (raw.dUp) dpadSemis += 1;
   if (raw.dDown) dpadSemis -= 1;
 
-  let stickDir = null;
-  if (raw.stickY <= -0.7) stickDir = 'up-full';
-  else if (raw.stickY <= -0.25) stickDir = 'up-half';
-  else if (raw.stickY >= 0.7) stickDir = 'down-full';
-  else if (raw.stickY >= 0.25) stickDir = 'down-half';
-
   const analogBendCents = -raw.stickY * 200;
   const totalDetuneCents = (dpadSemis * 100) + analogBendCents;
 
   let displayTokens = [];
   let pdfTokens = [];
 
-  if (dpadSemis === 1) { displayTokens.push("D-Pad ▲"); pdfTokens.push("D-PAD UP"); }
-  if (dpadSemis === -1) { displayTokens.push("D-Pad ▼"); pdfTokens.push("D-PAD DN"); }
-  if (stickDir === 'up-full') { displayTokens.push("Stick ⮝ Full"); pdfTokens.push("STICK UP FULL"); }
-  else if (stickDir === 'up-half') { displayTokens.push("Stick ⮝ ½"); pdfTokens.push("STICK UP HALF"); }
-  else if (stickDir === 'down-full') { displayTokens.push("Stick ⮟ Full"); pdfTokens.push("STICK DN FULL"); }
-  else if (stickDir === 'down-half') { displayTokens.push("Stick ⮟ ½"); pdfTokens.push("STICK DN HALF"); }
-  if (raw.vibrato) { displayTokens.push("Vibrato"); pdfTokens.push("VIBRATO"); }
+  if (dpadSemis === 1) { displayTokens.push("+ ▲ D-Pad"); pdfTokens.push("D-PAD UP"); }
+  if (dpadSemis === -1) { displayTokens.push("+ ▼ D-Pad"); pdfTokens.push("D-PAD DN"); }
+  if (raw.stickY <= -0.7) { displayTokens.push("+ ⮝ Stick Full"); pdfTokens.push("STICK UP FULL"); }
+  else if (raw.stickY <= -0.25) { displayTokens.push("+ ⮝ Stick ½"); pdfTokens.push("STICK UP HALF"); }
+  else if (raw.stickY >= 0.7) { displayTokens.push("+ ⮟ Stick Full"); pdfTokens.push("STICK DN FULL"); }
+  else if (raw.stickY >= 0.25) { displayTokens.push("+ ⮟ Stick ½"); pdfTokens.push("STICK DN HALF"); }
+  if (raw.vibrato) { displayTokens.push("+ ~ Vib"); pdfTokens.push("VIBRATO"); }
 
-  const comboPlain = displayTokens.length > 0 ? "+ " + displayTokens.join(" + ") : "(Natural)";
+  const comboDisplay = displayTokens.length > 0 ? displayTokens.join("<br>") : "(Just Press)";
+  const comboPlain = displayTokens.length > 0 ? displayTokens.join(" ") : "(Just Press)";
   const pdfModifier = pdfTokens.length > 0 ? pdfTokens.join(" + ") : "NATURAL";
 
   if (activeBtn) {
@@ -998,13 +1090,20 @@ function pollInput() {
       startNote(base.midi, totalDetuneCents, raw.vibrato);
 
       if (isRecording) {
+        let stickDir = null;
+        if (raw.stickY <= -0.7) stickDir = 'up-full';
+        else if (raw.stickY <= -0.25) stickDir = 'up-half';
+        else if (raw.stickY >= 0.7) stickDir = 'down-full';
+        else if (raw.stickY >= 0.25) stickDir = 'down-half';
+
         activeRecordedNote = {
           button: activeBtn,
           dpad: dpadSemis,
           stickDir: stickDir,
-          hasVibrato: raw.vibrato,
+          comboDisplay: comboDisplay,
           comboPlain: comboPlain,
           pdfMod: pdfModifier,
+          hasVibrato: raw.vibrato,
           pitch: finalNoteName,
           midi: base.midi + Math.round(totalDetuneCents / 100),
           startTime: (performance.now() - recordStartTime) / 1000
@@ -1083,7 +1182,6 @@ function toggleSVGClass(id, className, condition) {
   });
 }
 
-
 /**
  * ==============================================================================
  * MODULE 4: TEXT SONG PARSER & PRESET IMPORTER
@@ -1105,49 +1203,42 @@ function loadFromTextInput() {
     if (!match) return;
     const btn = match[1];
 
-    let offset = 0;
-    let comboTokens = [];
-    let pdfTokens = [];
-
-    let dpad = 0;
-    if (tok.includes('+D^') || tok.includes('#') || tok.includes('+▲')) {
-      dpad = 1;
-      offset += 1;
-      comboTokens.push("D-Pad ▲");
-      pdfTokens.push("D-PAD UP");
-    } else if (tok.includes('+DV') || tok.includes('B') || tok.includes('+▼')) {
-      dpad = -1;
-      offset -= 1;
-      comboTokens.push("D-Pad ▼");
-      pdfTokens.push("D-PAD DN");
-    }
-
-    let stickDir = null;
-    if (tok.includes('^^') || tok.includes('UU')) {
-      stickDir = 'up-full';
-      offset += 2;
-      comboTokens.push("Stick ⮝ Full");
-      pdfTokens.push("STICK UP FULL");
-    } else if (tok.includes('^') || tok.includes('U')) {
-      stickDir = 'up-half';
-      offset += 1;
-      comboTokens.push("Stick ⮝ ½");
-      pdfTokens.push("STICK UP HALF");
-    } else if (tok.includes('VV') || tok.includes('DD')) {
-      stickDir = 'down-full';
-      offset -= 2;
-      comboTokens.push("Stick ⮟ Full");
-      pdfTokens.push("STICK DN FULL");
-    } else if (tok.includes('V') || tok.includes('D')) {
-      stickDir = 'down-half';
-      offset -= 1;
-      comboTokens.push("Stick ⮟ ½");
-      pdfTokens.push("STICK DN HALF");
-    }
-
+    // Strip 'VIB' first so 'B' isn't misread as D-Pad Down
     let hasVib = false;
     if (tok.includes('~') || tok.includes('VIB')) {
       hasVib = true;
+      tok = tok.replace('VIB', '').replace('~', '');
+    }
+
+    let offset = 0;
+    let dpad = 0;
+    let stickDir = null;
+    let comboTokens = [];
+    let pdfTokens = [];
+
+    if (tok.includes('+D^') || tok.includes('#') || tok.includes('+▲')) {
+      offset += 1; dpad = 1;
+      comboTokens.push("D-Pad ▲"); pdfTokens.push("D-PAD UP");
+    } else if (tok.includes('+DV') || tok.includes('+B') || tok.includes('B') || tok.includes('+▼')) {
+      offset -= 1; dpad = -1;
+      comboTokens.push("D-Pad ▼"); pdfTokens.push("D-PAD DN");
+    }
+
+    if (tok.includes('^^') || tok.includes('UU')) {
+      offset += 2; stickDir = 'up-full';
+      comboTokens.push("Stick ⮝ Full"); pdfTokens.push("STICK UP FULL");
+    } else if (tok.includes('^') || tok.includes('U')) {
+      offset += 1; stickDir = 'up-half';
+      comboTokens.push("Stick ⮝ ½"); pdfTokens.push("STICK UP HALF");
+    } else if (tok.includes('VV') || tok.includes('DD')) {
+      offset -= 2; stickDir = 'down-full';
+      comboTokens.push("Stick ⮟ Full"); pdfTokens.push("STICK DN FULL");
+    } else if (tok.includes('V') || tok.includes('D')) {
+      offset -= 1; stickDir = 'down-half';
+      comboTokens.push("Stick ⮟ ½"); pdfTokens.push("STICK DN HALF");
+    }
+
+    if (hasVib) {
       comboTokens.push("Vibrato");
       pdfTokens.push("VIBRATO");
     }
@@ -1155,15 +1246,15 @@ function loadFromTextInput() {
     const base = BASE_PITCHES[btn];
     const finalMidi = base.midi + offset;
     const pitch = midiToName(finalMidi);
-    const comboPlain = comboTokens.length > 0 ? "+ " + comboTokens.join(" + ") : "(Natural)";
 
     parsed.push({
       button: btn,
       dpad: dpad,
       stickDir: stickDir,
-      hasVibrato: hasVib,
-      comboPlain: comboPlain,
+      comboDisplay: comboTokens.length > 0 ? comboTokens.join("<br>") : "(Natural)",
+      comboPlain: comboTokens.length > 0 ? "+ " + comboTokens.join(" + ") : "(Natural)",
       pdfMod: pdfTokens.length > 0 ? pdfTokens.join(" + ") : "NATURAL",
+      hasVibrato: hasVib,
       pitch: pitch,
       midi: finalMidi,
       startTime: currentTime,
@@ -1192,7 +1283,6 @@ function setPreset(name) {
     loadFromTextInput();
   }
 }
-
 
 /**
  * ==============================================================================
@@ -1247,17 +1337,12 @@ async function playSong() {
     }
 
     let stickY = 0;
-    let dUp = (item.dpad === 1);
-    let dDown = (item.dpad === -1);
-    if (!item.dpad) {
-      if (item.comboPlain.includes('▲')) dUp = true;
-      if (item.comboPlain.includes('▼')) dDown = true;
-    }
-
-    if (item.stickDir === 'up-full' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('Full') && item.comboPlain.includes('⮝'))) stickY = -1.0;
-    else if (item.stickDir === 'up-half' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('½') && item.comboPlain.includes('⮝'))) stickY = -0.5;
-    else if (item.stickDir === 'down-full' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('Full') && item.comboPlain.includes('⮟'))) stickY = 1.0;
-    else if (item.stickDir === 'down-half' || (item.comboPlain.includes('Stick') && item.comboPlain.includes('½') && item.comboPlain.includes('⮟'))) stickY = 0.5;
+    let dUp = item.dpad === 1;
+    let dDown = item.dpad === -1;
+    if (item.stickDir === 'up-full') stickY = -1.0;
+    else if (item.stickDir === 'up-half') stickY = -0.5;
+    else if (item.stickDir === 'down-full') stickY = 1.0;
+    else if (item.stickDir === 'down-half') stickY = 0.5;
 
     const mock = { L: false, R: false, A: false, X: false, Y: false, dUp, dDown, stickX: 0, stickY, vibrato: item.hasVibrato };
     mock[item.button] = true;
@@ -1283,6 +1368,18 @@ async function playSong() {
   document.getElementById('btn-record').disabled = false;
 }
 
+function buildModifierIconsHtml(n, iconPx) {
+  let icons = [];
+  if (n.dpad === 1) icons.push(getDpadSvg('up', iconPx));
+  if (n.dpad === -1) icons.push(getDpadSvg('down', iconPx));
+  if (n.stickDir === 'up-full') icons.push(getStickSvg('up', 'full', iconPx));
+  if (n.stickDir === 'up-half') icons.push(getStickSvg('up', 'half', iconPx));
+  if (n.stickDir === 'down-full') icons.push(getStickSvg('down', 'full', iconPx));
+  if (n.stickDir === 'down-half') icons.push(getStickSvg('down', 'half', iconPx));
+  if (n.hasVibrato) icons.push(getStickSvg('vibrato', 'none', iconPx));
+  return icons;
+}
+
 function renderSheetMusic() {
   const container = document.getElementById('sheet-music');
   if (recordedEvents.length === 0) {
@@ -1290,275 +1387,130 @@ function renderSheetMusic() {
     return;
   }
 
+  const count = recordedEvents.length;
+  let iconPx = count <= 6 ? 30 : count <= 12 ? 25 : 20;
+  let cardMinW = count <= 6 ? 124 : count <= 12 ? 104 : 86;
+  let badgePx = count <= 6 ? 44 : count <= 12 ? 36 : 32;
+  let badgeFont = count <= 6 ? 18 : count <= 12 ? 15 : 14;
+  let pitchFont = count <= 6 ? 13 : 11;
+
   container.innerHTML = "";
   recordedEvents.forEach((n) => {
     const card = document.createElement('div');
     card.className = "note-card";
+    card.style.minWidth = `${cardMinW}px`;
+    card.style.padding = count <= 6 ? "14px 12px" : "10px 8px";
+
     const bg = BASE_PITCHES[n.button]?.color || "#334155";
-
-    // Build visual icons for modifiers
-    let icons = [];
-    if (n.dpad === 1) icons.push(getDpadSvg('up', 22));
-    if (n.dpad === -1) icons.push(getDpadSvg('down', 22));
-    if (n.stickDir === 'up-full') icons.push(getStickSvg('up', 'full', 22));
-    if (n.stickDir === 'up-half') icons.push(getStickSvg('up', 'half', 22));
-    if (n.stickDir === 'down-full') icons.push(getStickSvg('down', 'full', 22));
-    if (n.stickDir === 'down-half') icons.push(getStickSvg('down', 'half', 22));
-    if (n.hasVibrato) icons.push(getStickSvg('vibrato', 'none', 22));
-
-    const iconRow = icons.length > 0 
-      ? `<div class="combo-icon-row">${icons.join('')}</div>`
-      : `<div class="combo-icon-placeholder"></div>`;
+    const icons = buildModifierIconsHtml(n, iconPx);
+    const iconRow = icons.length > 0
+      ? `<div class="combo-icon-row" style="min-height:${iconPx}px;">${icons.join('')}</div>`
+      : `<div style="min-height:${iconPx}px;"></div>`;
 
     card.innerHTML = `
-      <div class="badge-icon" style="background:${bg}">${n.button}</div>
-      <div class="card-combo">
+      <div class="badge-icon" style="background:${bg}; width:${badgePx}px; height:${badgePx}px; font-size:${badgeFont}px;">${n.button}</div>
+      <div class="card-combo" style="flex-direction:column; gap:4px;">
         ${iconRow}
-        <div class="combo-text ${icons.length === 0 ? 'natural-text' : ''}">${n.comboPlain}</div>
+        <div class="combo-text ${icons.length === 0 ? 'natural-text' : ''}" style="font-size:${count <= 6 ? '10.5px' : '9.5px'};">${n.comboPlain}</div>
       </div>
-      <div class="card-pitch">${n.pitch}</div>
+      <div class="card-pitch" style="font-size:${pitchFont}px; color:#cbd5e1; font-weight:700;">${n.pitch}</div>
     `;
     container.appendChild(card);
   });
   container.scrollTop = container.scrollHeight;
 }
 
-
 /**
  * ==============================================================================
- * MODULE 6: HIGH-DPI CANVAS RENDERER FOR LIVE PREVIEW & PNG EXPORT
+ * MODULE 6: BEAUTIFUL HTML SHEET GENERATOR & HTML2CANVAS EXPORTER
  * ==============================================================================
  */
-function drawCanvasDpad(ctx, cx, cy, dir, size = 13) {
-  const isUp = dir === 'up';
-  const isDown = dir === 'down';
-  const half = size / 2;
-  const armW = size * 0.38;
-  const armHalf = armW / 2;
+function renderPrintableHTMLSheet() {
+  const sheet = document.getElementById('printable-sheet');
+  const count = recordedEvents.length;
 
-  ctx.fillStyle = "#334155";
-  ctx.fillRect(cx - armHalf, cy - half, armW, size);
-  ctx.fillRect(cx - half, cy - armHalf, size, armW);
+  // Choose visual size tier based on how many notes are in the song
+  let tierClass = 'tier-sm';
+  let iconPx = 22;
+  if (count <= 4) { tierClass = 'tier-xl'; iconPx = 38; }
+  else if (count <= 8) { tierClass = 'tier-lg'; iconPx = 32; }
+  else if (count <= 15) { tierClass = 'tier-md'; iconPx = 26; }
 
-  ctx.fillStyle = "#ca8a04";
-  if (isUp) {
-    ctx.fillRect(cx - armHalf, cy - half, armW, half - armHalf);
-  } else if (isDown) {
-    ctx.fillRect(cx - armHalf, cy + armHalf, armW, half - armHalf);
-  }
+  const cardsHtml = recordedEvents.map((n, idx) => {
+    const rgb = BASE_PITCHES[n.button]?.hex || [100, 116, 139];
+    const badgeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+    const icons = buildModifierIconsHtml(n, iconPx);
+    const isNatural = !n.pdfMod || n.pdfMod === "NATURAL";
+
+    return `
+      <div class="print-card">
+        <span class="print-card-step">#${idx + 1}</span>
+        <div class="print-badge" style="background:${badgeColor};">${n.button}</div>
+        <div class="print-mod-area">
+          ${icons.length > 0 ? `<div class="combo-icon-row">${icons.join('')}</div>` : ''}
+          <span class="print-mod-pill ${isNatural ? 'natural' : 'active'}">${isNatural ? 'Natural' : n.pdfMod}</span>
+        </div>
+        <div class="print-pitch">${n.pitch}</div>
+      </div>
+    `;
+  }).join('');
+
+  sheet.innerHTML = `
+    <div class="sheet-header">
+      <h1>Ocarina Action Tablature</h1>
+      <div class="sheet-meta">
+        <span>🎵 Total Notes: ${count}</span>
+        <span>•</span>
+        <span>🎮 Switch 2 (2026) Standard Tuning</span>
+        <span>•</span>
+        <span>📅 ${new Date().toLocaleDateString()}</span>
+      </div>
+    </div>
+    <div class="sheet-legend">
+      <div><b>1. Primary Button Circle:</b> Press face button <b>[L]</b> Low D, <b>[R]</b> F, <b>[A]</b> A, <b>[Y]</b> B, or <b>[X]</b> High D</div>
+      <div><b>2. Pitch Modifiers:</b> Hold <b>D-Pad Up/Down</b> (±1 semitone) or tilt <b>Left Stick Up/Down</b> (Half = ±1, Full = ±2, Side = Vibrato)</div>
+    </div>
+    <div class="sheet-grid ${tierClass}">
+      ${cardsHtml}
+    </div>
+  `;
 }
 
-function drawCanvasStick(ctx, cx, cy, dir, intensity, size = 13) {
-  const r = size / 2;
-  ctx.strokeStyle = "#475569";
-  ctx.lineWidth = 1;
-  ctx.fillStyle = "#0f172a";
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  let nubY = cy;
-  let nubColor = "#0284c7";
-  if (dir === 'up') {
-    nubY = cy - (intensity === 'full' ? r * 0.6 : r * 0.35);
-  } else if (dir === 'down') {
-    nubY = cy + (intensity === 'full' ? r * 0.6 : r * 0.35);
-  } else if (dir === 'vibrato') {
-    nubColor = "#a855f7";
-  }
-
-  ctx.fillStyle = nubColor;
-  ctx.beginPath();
-  ctx.arc(cx, nubY, r * 0.45, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawSheetToCanvas(canvas, events, scale = 2) {
-  const baseWidth = 612; // Standard Letter width (points)
-  const maxPerRow = 8;
-  const rows = Math.ceil(events.length / maxPerRow);
-  const cardHeight = 78;
-  const rowSpacing = 14;
-  const topMargin = 160;
-  const bottomMargin = 40;
-  
-  const calculatedHeight = Math.max(792, topMargin + (rows * (cardHeight + rowSpacing)) + bottomMargin);
-
-  canvas.width = baseWidth * scale;
-  canvas.height = calculatedHeight * scale;
-  canvas.style.width = `${baseWidth}px`;
-  canvas.style.height = `${calculatedHeight}px`;
-
-  const ctx = canvas.getContext('2d');
-  ctx.save();
-  ctx.scale(scale, scale);
-
-  // Background Paper
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, baseWidth, calculatedHeight);
-
-  // Title Header
-  ctx.fillStyle = "#181e2e";
-  ctx.font = "bold 21px Helvetica, Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("OCARINA ACTION TABLATURE SHEET", baseWidth / 2, 46);
-
-  // Subtitle
-  ctx.fillStyle = "#64748b";
-  ctx.font = "9px Helvetica, Arial, sans-serif";
-  ctx.fillText(`Total Notes: ${events.length}   |   Tuning: Switch 2 (2026) Standard   |   Date: ${new Date().toLocaleDateString()}`, baseWidth / 2, 65);
-
-  // Divider Line
-  ctx.strokeStyle = "#dae1e9";
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(40, 78);
-  ctx.lineTo(baseWidth - 40, 78);
-  ctx.stroke();
-
-  // Instructions Box
-  ctx.fillStyle = "#f8fafc";
-  ctx.strokeStyle = "#e2e8f0";
-  ctx.lineWidth = 1;
-  drawRoundedRect(ctx, 40, 92, baseWidth - 80, 52, 6, true, true);
-
-  ctx.fillStyle = "#1e293b";
-  ctx.font = "bold 9.5px Helvetica, Arial, sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText("HOW TO PLAY THIS SHEET:", 52, 108);
-
-  ctx.fillStyle = "#475569";
-  ctx.font = "8px Helvetica, Arial, sans-serif";
-  ctx.fillText("• Primary Circle: Face button to tap ([L] = Low D, [R] = F, [A] = A, [Y] = B, [X] = High D)", 52, 122);
-  ctx.fillText("• Modifier Icons: Hold D-Pad UP/DN (+/-1) or tilt Left Stick (HALF = +/-1, FULL = +/-2, VIBRATO)", 52, 134);
-
-  // Action Cards Grid
-  const cardWidth = 56;
-  const marginX = 40;
-  const gapX = (baseWidth - (marginX * 2) - (maxPerRow * cardWidth)) / (maxPerRow - 1);
-  let y = 166;
-  let col = 0;
-
-  events.forEach((note) => {
-    const x = marginX + (col * (cardWidth + gapX));
-
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 0.75;
-    drawRoundedRect(ctx, x, y, cardWidth, cardHeight, 5, true, true);
-
-    // Button Badge Circle
-    const badgeRgb = BASE_PITCHES[note.button]?.hex || [100, 116, 139];
-    ctx.fillStyle = `rgb(${badgeRgb[0]}, ${badgeRgb[1]}, ${badgeRgb[2]})`;
-    ctx.beginPath();
-    ctx.arc(x + cardWidth / 2, y + 17, 10.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Button Letter
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 11px Helvetica, Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(note.button, x + cardWidth / 2, y + 21);
-
-    // Render Canvas Vector Icons
-    let iconList = [];
-    if (note.dpad === 1) iconList.push({ type: 'dpad', dir: 'up' });
-    if (note.dpad === -1) iconList.push({ type: 'dpad', dir: 'down' });
-    if (note.stickDir) iconList.push({ type: 'stick', dir: note.stickDir.startsWith('up') ? 'up' : 'down', intensity: note.stickDir.endsWith('full') ? 'full' : 'half' });
-    if (note.hasVibrato) iconList.push({ type: 'stick', dir: 'vibrato' });
-
-    const iconY = y + 37;
-    if (iconList.length > 0) {
-      const totalW = iconList.length * 15;
-      let startX = (x + cardWidth / 2) - (totalW / 2) + 7.5;
-      iconList.forEach(ic => {
-        if (ic.type === 'dpad') drawCanvasDpad(ctx, startX, iconY, ic.dir, 13);
-        else drawCanvasStick(ctx, startX, iconY, ic.dir, ic.intensity, 13);
-        startX += 15;
-      });
-    }
-
-    // Modifier Text below icon
-    ctx.font = "bold 6.2px Helvetica, Arial, sans-serif";
-    ctx.textAlign = "center";
-    if (note.pdfMod && note.pdfMod !== "NATURAL") {
-      ctx.fillStyle = "#c2410c";
-      ctx.fillText(note.pdfMod, x + cardWidth / 2, y + 53);
-    } else {
-      ctx.fillStyle = "#94a3b8";
-      ctx.fillText("NATURAL", x + cardWidth / 2, y + 53);
-    }
-
-    // Pitch Name at bottom
-    ctx.fillStyle = "#1e293b";
-    ctx.font = "bold 8.5px Helvetica, Arial, sans-serif";
-    const cleanPitch = note.pitch.replace("♯", "#").replace("♭", "b");
-    ctx.fillText(cleanPitch, x + cardWidth / 2, y + 69);
-
-    col++;
-    if (col >= maxPerRow) {
-      col = 0;
-      y += cardHeight + rowSpacing;
-    }
-  });
-
-  ctx.restore();
-}
-
-function drawRoundedRect(ctx, x, y, width, height, radius, fill, stroke) {
-  ctx.beginPath();
-  if (ctx.roundRect) {
-    ctx.roundRect(x, y, width, height, radius);
-  } else {
-    ctx.moveTo(x + radius, y);
-    ctx.arcTo(x + width, y, x + width, y + height, radius);
-    ctx.arcTo(x + width, y + height, x, y + height, radius);
-    ctx.arcTo(x, y + height, x, y, radius);
-    ctx.arcTo(x, y, x + width, y, radius);
-    ctx.closePath();
-  }
-  if (fill) ctx.fill();
-  if (stroke) ctx.stroke();
-}
-
-
-/**
- * ==============================================================================
- * MODULE 7: MODAL CONTROLLER & MULTI-FORMAT EXPORTS (PDF, PNG, PRINT)
- * ==============================================================================
- */
 function openExportModal() {
   if (recordedEvents.length === 0) return;
-  const modal = document.getElementById('export-modal');
-  const canvas = document.getElementById('sheet-preview-canvas');
-  drawSheetToCanvas(canvas, recordedEvents, 2);
-  modal.style.display = 'flex';
+  renderPrintableHTMLSheet();
+  document.getElementById('export-modal').style.display = 'flex';
 }
 
 function closeExportModal() {
-  const modal = document.getElementById('export-modal');
-  modal.style.display = 'none';
+  document.getElementById('export-modal').style.display = 'none';
 }
 
-function downloadPNG() {
-  const canvas = document.getElementById('sheet-preview-canvas');
-  if (!canvas) return;
+async function captureSheetCanvas() {
+  const sheetEl = document.getElementById('printable-sheet');
+  return await html2canvas(sheetEl, {
+    scale: 2.5,
+    backgroundColor: "#ffffff",
+    useCORS: true
+  });
+}
+
+async function downloadPNG() {
+  const canvas = await captureSheetCanvas();
   const a = document.createElement('a');
   a.download = "ocarina_action_sheet.png";
   a.href = canvas.toDataURL("image/png");
   a.click();
 }
 
-function printSheet() {
-  const canvas = document.getElementById('sheet-preview-canvas');
-  if (!canvas) return;
+async function printSheet() {
+  const canvas = await captureSheetCanvas();
   const imgData = canvas.toDataURL("image/png");
   const win = window.open('', '_blank');
   win.document.write(`
     <html>
       <head><title>Print Ocarina Tablature</title></head>
-      <body style="margin:0; display:flex; justify-content:center; align-items:center; background:#fff;">
+      <body style="margin:0; padding:24px; display:flex; justify-content:center; background:#fff;">
         <img src="${imgData}" style="max-width:100%; height:auto;" onload="window.print();window.close();"/>
       </body>
     </html>
@@ -1566,135 +1518,27 @@ function printSheet() {
   win.document.close();
 }
 
-function exportPDF() {
+async function exportPDF() {
   if (recordedEvents.length === 0) return;
+  const canvas = await captureSheetCanvas();
+  const imgData = canvas.toDataURL("image/png");
+
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
+  const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 28;
 
-  const pageWidth = doc.internal.pageSize.getWidth();
-  let y = 46;
+  const maxW = pageWidth - margin * 2;
+  const maxH = pageHeight - margin * 2;
+  const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(21);
-  doc.setTextColor(24, 30, 46);
-  doc.text("OCARINA ACTION TABLATURE SHEET", pageWidth / 2, y, { align: "center" });
+  const renderW = canvas.width * ratio;
+  const renderH = canvas.height * ratio;
+  const xOffset = (pageWidth - renderW) / 2;
 
-  y += 18;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 116, 139);
-  doc.text(`Total Notes: ${recordedEvents.length}   |   Tuning: Switch 2 (2026) Standard   |   Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: "center" });
-
-  y += 16;
-  doc.setDrawColor(218, 225, 233);
-  doc.setLineWidth(1.2);
-  doc.line(40, y, pageWidth - 40, y);
-
-  y += 16;
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(40, y, pageWidth - 80, 52, 6, 6, "FD");
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9.5);
-  doc.setTextColor(30, 41, 59);
-  doc.text("HOW TO PLAY THIS SHEET:", 52, y + 16);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(71, 85, 105);
-  doc.text("• Primary Circle: Face button to tap ([L] = Low D, [R] = F, [A] = A, [Y] = B, [X] = High D)", 52, y + 30);
-  doc.text("• Modifier Icons: Hold D-Pad UP/DN (+/-1) or tilt Left Stick (HALF = +/-1, FULL = +/-2, VIBRATO)", 52, y + 42);
-
-  y += 66;
-
-  const cardWidth = 56;
-  const cardHeight = 78;
-  const marginX = 40;
-  const maxPerRow = 8;
-  const gapX = (pageWidth - (marginX * 2) - (maxPerRow * cardWidth)) / (maxPerRow - 1);
-
-  let col = 0;
-
-  recordedEvents.forEach((note) => {
-    const x = marginX + (col * (cardWidth + gapX));
-
-    doc.setDrawColor(203, 213, 225);
-    doc.setLineWidth(0.75);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(x, y, cardWidth, cardHeight, 5, 5, "FD");
-
-    // Face Button Circle
-    const badgeRgb = BASE_PITCHES[note.button]?.hex || [100, 116, 139];
-    doc.setFillColor(badgeRgb[0], badgeRgb[1], badgeRgb[2]);
-    doc.circle(x + cardWidth / 2, y + 17, 10.5, "F");
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(255, 255, 255);
-    doc.text(note.button, x + cardWidth / 2, y + 21, { align: "center" });
-
-    // Vector Icon Drawing in PDF
-    let iconList = [];
-    if (note.dpad === 1) iconList.push({ type: 'dpad', dir: 'up' });
-    if (note.dpad === -1) iconList.push({ type: 'dpad', dir: 'down' });
-    if (note.stickDir) iconList.push({ type: 'stick', dir: note.stickDir.startsWith('up') ? 'up' : 'down', intensity: note.stickDir.endsWith('full') ? 'full' : 'half' });
-    if (note.hasVibrato) iconList.push({ type: 'stick', dir: 'vibrato' });
-
-    const iconY = y + 37;
-    if (iconList.length > 0) {
-      const totalW = iconList.length * 15;
-      let startX = (x + cardWidth / 2) - (totalW / 2) + 7.5;
-      iconList.forEach(ic => {
-        if (ic.type === 'dpad') {
-          doc.setFillColor(51, 65, 85);
-          doc.rect(startX - 2, iconY - 5.5, 4, 11, 'F');
-          doc.rect(startX - 5.5, iconY - 2, 11, 4, 'F');
-          doc.setFillColor(202, 138, 4);
-          if (ic.dir === 'up') doc.rect(startX - 2, iconY - 5.5, 4, 3.5, 'F');
-          else if (ic.dir === 'down') doc.rect(startX - 2, iconY + 2, 4, 3.5, 'F');
-        } else {
-          doc.setDrawColor(71, 85, 105);
-          doc.setLineWidth(0.8);
-          doc.circle(startX, iconY, 5.5, 'S');
-          doc.setFillColor(ic.dir === 'vibrato' ? 168 : 2, ic.dir === 'vibrato' ? 85 : 132, ic.dir === 'vibrato' ? 247 : 199);
-          const nubY = ic.dir === 'up' ? (iconY - (ic.intensity === 'full' ? 3.2 : 1.8)) : ic.dir === 'down' ? (iconY + (ic.intensity === 'full' ? 3.2 : 1.8)) : iconY;
-          doc.circle(startX, nubY, 2.5, 'F');
-        }
-        startX += 15;
-      });
-    }
-
-    // Modifier text
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.2);
-    if (note.pdfMod && note.pdfMod !== "NATURAL") {
-      doc.setTextColor(194, 65, 12);
-      doc.text(note.pdfMod, x + cardWidth / 2, y + 53, { align: "center" });
-    } else {
-      doc.setTextColor(148, 163, 184);
-      doc.text("NATURAL", x + cardWidth / 2, y + 53, { align: "center" });
-    }
-
-    // Pitch Name
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(30, 41, 59);
-    const cleanPitch = note.pitch.replace("♯", "#").replace("♭", "b");
-    doc.text(cleanPitch, x + cardWidth / 2, y + 69, { align: "center" });
-
-    col++;
-    if (col >= maxPerRow) {
-      col = 0;
-      y += cardHeight + 14;
-      if (y > 700) {
-        doc.addPage();
-        y = 46;
-      }
-    }
-  });
-
-  doc.save("ocarina_action_sheet.pdf");
+  pdf.addImage(imgData, 'PNG', xOffset, margin, renderW, renderH);
+  pdf.save("ocarina_action_sheet.pdf");
 }
 
 requestAnimationFrame(pollInput);
