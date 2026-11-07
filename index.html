@@ -43,7 +43,7 @@
       box-sizing: border-box; 
       margin: 0; 
       padding: 0; 
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif; 
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -59,7 +59,7 @@
     }
 
     .container { 
-      max-width: 1040px; 
+      max-width: 1080px; 
       width: 100%; 
       display: flex; 
       flex-direction: column; 
@@ -111,9 +111,16 @@
     .badge-connected { background: #14532d; color: #4ade80; }
     .badge-midi { background: #1e3a8a; color: #93c5fd; }
 
-    /* Layout Grids */
-    .grid-row { display: grid; grid-template-columns: 1fr 350px; gap: 14px; }
-    @media (max-width: 890px) { .grid-row { grid-template-columns: 1fr; } }
+    /* Balanced 2-Column Dashboard Grid */
+    .grid-row { 
+      display: grid; 
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); 
+      gap: 14px; 
+      align-items: stretch;
+    }
+    @media (max-width: 920px) { 
+      .grid-row { grid-template-columns: 1fr; } 
+    }
 
     .panel {
       background: var(--panel-bg); 
@@ -122,17 +129,20 @@
       padding: 14px; 
       display: flex; 
       flex-direction: column; 
-      gap: 12px;
+      gap: 10px;
     }
     .panel h2 {
       font-family: 'Cinzel', serif;
-      font-size: 14px;
+      font-size: 13.5px;
       letter-spacing: 0.5px;
       color: var(--gold-highlight);
       border-bottom: 1px solid var(--panel-border);
       padding-bottom: 6px;
       user-select: none;
       -webkit-user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     /* SVG Interactive Controller Viewport */
@@ -140,7 +150,7 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
-      padding: 4px 0; 
+      padding: 2px 0; 
       user-select: none; 
       -webkit-user-select: none; 
       touch-action: manipulation;
@@ -177,7 +187,7 @@
     .monitor {
       background: #090c12; 
       border-radius: 8px; 
-      padding: 8px 10px; 
+      padding: 6px 10px; 
       display: flex;
       justify-content: space-around; 
       align-items: center; 
@@ -186,25 +196,31 @@
       -webkit-user-select: none;
     }
     .monitor-cell { text-align: center; }
-    .monitor-cell .label { font-size: 9.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .monitor-cell .value { font-size: 15px; font-weight: 700; color: #fff; margin-top: 2px; min-height: 20px; }
+    .monitor-cell .label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .monitor-cell .value { font-size: 14px; font-weight: 700; color: #fff; margin-top: 1px; min-height: 18px; }
 
-    /* Action Buttons */
-    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    /* Action Buttons & Button Grids */
+    .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-row-4 { display: flex; gap: 6px; }
+    .btn-row-4 button { flex: 1; min-width: 0; padding: 8px 4px; font-size: 11.5px; }
+    
+    .btn-row-3 { display: flex; gap: 6px; }
+    .btn-row-3 button { flex: 1; min-width: 0; padding: 8px 4px; font-size: 11px; }
+
     button, .file-btn-label {
-      flex: 1 1 calc(50% - 8px); 
-      min-width: 105px;
-      padding: 10px 12px; 
-      font-size: 12.5px; 
+      flex: 1 1 calc(50% - 6px); 
+      min-width: 90px;
+      padding: 8px 10px; 
+      font-size: 11.5px; 
       font-weight: 600; 
       border: none;
-      border-radius: 8px; 
+      border-radius: 7px; 
       cursor: pointer; 
       transition: all 0.15s ease; 
       display: flex;
       align-items: center; 
       justify-content: center; 
-      gap: 6px; 
+      gap: 5px; 
       text-decoration: none;
       box-sizing: border-box; 
       user-select: none;
@@ -225,44 +241,53 @@
     .btn-gold { background: #92400e; color: #fef08a; border: 1px solid #b45309; }
     .btn-gold:hover { background: #b45309; color: #fff; }
     
+    .btn-purple {
+      background: #7c3aed;
+      color: #fff;
+      border: 1px solid #9333ea;
+      box-shadow: 0 0 10px rgba(124, 58, 237, 0.35);
+    }
+    .btn-purple:hover { background: #6d28d9; }
+
     .btn-preset { 
       background: #1e293b; 
       color: #94a3b8; 
-      font-size: 11px; 
-      padding: 6px 9px; 
-      border-radius: 6px; 
+      font-size: 10.5px; 
+      padding: 5px 6px; 
+      border-radius: 5px; 
       flex: none; 
       min-width: auto;
+      text-align: center;
     }
     .btn-preset:hover { background: #334155; color: #fff; }
+    .btn-preset.active-speed { background: #2563eb; color: #fff; font-weight: 700; }
     button:disabled, .file-btn-label.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-    /* Timing Toggle Switch UI */
-    .switch-row {
-      display: flex; 
-      align-items: center; 
+    /* Compact Speed & Toggle Row */
+    .compact-control-bar {
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      background: #090c12; 
-      border: 1px solid var(--panel-border); 
+      background: #090c12;
+      border: 1px solid var(--panel-border);
       border-radius: 8px;
-      padding: 8px 12px; 
-      margin-top: 2px;
+      padding: 6px 10px;
+      gap: 8px;
       user-select: none;
-      -webkit-user-select: none;
     }
-    .switch-label { font-size: 12px; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 6px; }
-    .switch { position: relative; display: inline-block; width: 38px; height: 20px; }
+    .switch-label { font-size: 11px; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px; }
+    .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
       position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #263147; transition: .2s; border-radius: 20px; border: 1px solid #334155;
+      background-color: #263147; transition: .2s; border-radius: 18px; border: 1px solid #334155;
     }
     .slider:before {
-      position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px;
+      position: absolute; content: ""; height: 12px; width: 12px; left: 2px; bottom: 2px;
       background-color: #94a3b8; transition: .2s; border-radius: 50%;
     }
     input:checked + .slider { background-color: #2563eb; border-color: #3b82f6; }
-    input:checked + .slider:before { transform: translateX(18px); background-color: #ffffff; }
+    input:checked + .slider:before { transform: translateX(16px); background-color: #ffffff; }
 
     /* Non-Musician Tablature Display */
     .sheet-container {
@@ -270,7 +295,7 @@
       border-radius: 8px; 
       border: 1px solid var(--panel-border); 
       padding: 12px;
-      min-height: 160px; 
+      min-height: 150px; 
       max-height: 270px; 
       overflow-y: auto; 
       display: flex; 
@@ -279,7 +304,7 @@
       align-content: flex-start;
       -webkit-overflow-scrolling: touch;
     }
-    .sheet-empty { width: 100%; text-align: center; color: var(--text-muted); font-size: 12.5px; margin-top: 50px; user-select: none; }
+    .sheet-empty { width: 100%; text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 45px; user-select: none; }
 
     .note-card {
       background: #192030; 
@@ -290,19 +315,65 @@
       flex-direction: column; 
       align-items: center;
       gap: 5px; 
-      min-width: 78px; 
+      min-width: 80px; 
+      position: relative;
       animation: popIn 0.15s ease;
       user-select: none;
       -webkit-user-select: none;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+    .note-card:hover {
+      border-color: #60a5fa;
+      transform: translateY(-2px);
+    }
+    .note-card.rest-card {
+      background: #111622;
+      border: 1px dashed #475569;
     }
     @keyframes popIn { 0% { transform: scale(0.75); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    /* Delete Card Button */
+    .card-delete-btn {
+      position: absolute;
+      top: 3px;
+      right: 4px;
+      background: rgba(220, 38, 38, 0.25);
+      color: #f87171;
+      border: 1px solid rgba(220, 38, 38, 0.4);
+      border-radius: 50%;
+      width: 17px;
+      height: 17px;
+      font-size: 10px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.15s ease;
+    }
+    .card-delete-btn:hover {
+      opacity: 1;
+      background: #dc2626;
+      color: #fff;
+      transform: scale(1.15);
+    }
+
+    /* Playhead Active Card Glow (Karaoke rhythm style) */
+    .note-card.active-playhead {
+      border-color: var(--gold-highlight) !important;
+      box-shadow: 0 0 16px rgba(250, 204, 21, 0.75), inset 0 0 8px rgba(250, 204, 21, 0.45) !important;
+      transform: translateY(-4px) scale(1.06);
+      z-index: 10;
+    }
 
     .badge-icon {
       width: 32px; 
       height: 32px; 
       border-radius: 50%; 
       display: flex; 
-      align-items: center;
+      align-items: center; 
       justify-content: center; 
       font-weight: 800; 
       font-size: 14px; 
@@ -313,7 +384,7 @@
       font-size: 10px; 
       font-weight: 700; 
       color: var(--gold-highlight); 
-      text-align: center;
+      text-align: center; 
       min-height: 20px; 
       display: flex; 
       align-items: center; 
@@ -330,22 +401,50 @@
       border-radius: 999px;
       letter-spacing: 0.3px; 
       margin-top: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .card-dur-badge:hover {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+      transform: scale(1.05);
     }
     .card-pitch { font-size: 10px; font-weight: 600; color: #64748b; }
 
     textarea {
       width: 100%; 
-      height: 60px; 
+      height: 48px; 
       background: #080a0f; 
-      border: 1px solid var(--panel-border);
-      border-radius: 8px; 
-      padding: 8px 10px; 
+      border: 1px solid var(--panel-border); 
+      border-radius: 7px; 
+      padding: 6px 9px; 
       color: #fff; 
-      font-size: 13px; 
+      font-size: 11.5px; 
       resize: vertical;
     }
     textarea:focus { outline: 1px solid var(--accent-cyan); }
-    .guide-box { font-size: 11px; line-height: 1.5; color: var(--text-muted); user-select: none; }
+    .input-sub-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .status-alert {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 8px;
+      border-radius: 6px;
+      display: none;
+      animation: popIn 0.15s ease;
+    }
+    .status-alert.info { background: #1e3a5f; color: #7dd3fc; border: 1px solid #0284c7; }
+    .status-alert.success { background: #064e3b; color: #6ee7b7; border: 1px solid #059669; }
+
+    .guide-box { font-size: 10.5px; line-height: 1.5; color: var(--text-muted); user-select: none; }
     .guide-box code { color: var(--gold-highlight); background: #080a0f; padding: 1px 4px; border-radius: 4px; }
 
     /* Expanded Chromatic Fingering Reference Guide */
@@ -358,23 +457,23 @@
     }
     table.fingering-table {
       width: 100%;
-      min-width: 480px;
+      min-width: 580px;
       border-collapse: collapse;
-      font-size: 12.5px;
+      font-size: 12px;
       text-align: left;
       user-select: none;
       -webkit-user-select: none;
     }
     table.fingering-table th {
       background: #0f131d;
-      padding: 10px 14px;
+      padding: 9px 12px;
       color: var(--gold-highlight);
       font-weight: 700;
       border-bottom: 2px solid var(--panel-border);
       letter-spacing: 0.5px;
     }
     table.fingering-table td {
-      padding: 9px 14px;
+      padding: 8px 12px;
       border-bottom: 1px solid #1a2233;
       color: #cbd5e1;
     }
@@ -393,6 +492,26 @@
       font-size: 10.5px;
       color: #fff;
       margin-right: 4px;
+    }
+
+    .notation-code {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-weight: 700;
+      font-size: 11.5px;
+      color: var(--gold-highlight);
+      background: #080a0f;
+      border: 1px solid #2a354c;
+      padding: 2px 6px;
+      border-radius: 5px;
+      display: inline-block;
+      letter-spacing: 0.5px;
+    }
+    .notation-code.alt-notation {
+      color: #94a3b8;
+      border-color: #1e293b;
+      font-size: 10.5px;
+      padding: 1px 5px;
+      margin-left: 6px;
     }
 
     /* Modal Styles */
@@ -643,11 +762,12 @@
   </div>
 
   <div class="grid-row">
-    <!-- LEFT: Interactive Controller -->
+    <!-- COLUMN 1 (LEFT): Performance Instrument & Melody Inputs -->
     <div class="panel">
-      <h2>Interactive Controller Diagram (Drag Stick / Tap / Gamepad)</h2>
+      <h2>Interactive Controller &amp; Melody Inputs</h2>
+      
       <div class="controller-view">
-        <svg id="controller-svg" width="440" height="260" viewBox="0 0 440 260">
+        <svg id="controller-svg" width="440" height="240" viewBox="0 0 440 250">
           <path d="M 105 40 C 150 35, 290 35, 335 40 C 390 46, 425 125, 405 205 C 388 245, 340 238, 305 188 C 275 166, 165 166, 135 188 C 100 238, 52 245, 35 205 C 15 125, 50 46, 105 40 Z" 
                 fill="#181e2b" stroke="#2a354c" stroke-width="4"/>
 
@@ -707,21 +827,51 @@
         </div>
         <div class="monitor-cell">
           <div class="label">Detune</div>
-          <div id="mon-detune" class="value" style="color:var(--accent-cyan); font-size:14px;">0 cents</div>
+          <div id="mon-detune" class="value" style="color:var(--accent-cyan); font-size:13px;">0 cents</div>
         </div>
         <div class="monitor-cell">
           <div class="label">Vibrato</div>
-          <div id="mon-expr" class="value" style="color:#c084fc; font-size:14px;">None</div>
+          <div id="mon-expr" class="value" style="color:#c084fc; font-size:13px;">None</div>
+        </div>
+      </div>
+
+      <!-- BOX 1: RAW MUSICAL NOTE INPUT & TRANSLATOR -->
+      <div style="margin-top:2px;">
+        <div class="input-sub-label">
+          <span>1. Raw Notes (Standard Pitch)</span>
+          <button id="btn-copy-ai-prompt" class="btn-purple" style="display:inline-flex; padding:3px 8px; font-size:10px; border-radius:4px; min-width:auto; flex:none;" onclick="copyAiPrompt()">
+            📋 Copy AI Prompt Template
+          </button>
+        </div>
+        <textarea id="raw-notes-input" placeholder="e.g. D4:0.5, F#4:0.25, A4:0.5, D5:1.0 (or rests: REST:0.5)"></textarea>
+        <div class="btn-row" style="margin-top:4px;">
+          <button class="btn-success" onclick="translateRawNotesToController()">
+            ➔ Translate to Controller &amp; Load
+          </button>
+        </div>
+        <div id="translate-alert" class="status-alert info" style="margin-top:4px;"></div>
+      </div>
+
+      <!-- BOX 2: CONTROLLER NOTATION INPUT -->
+      <div style="margin-top:2px;">
+        <div class="input-sub-label">
+          <span>2. Controller Input Notation</span>
+        </div>
+        <textarea id="text-notes-input" placeholder="e.g. L, R, A, Y, X or with timing: A:0.5, X:0.25, R+^^:0.4"></textarea>
+        <div class="btn-row" style="margin-top:4px;">
+          <button class="btn-secondary" onclick="loadFromTextInput()">Load Controller Notes into Sheet</button>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: Controls & Melody Importer -->
+    <!-- COLUMN 2 (RIGHT): Studio Controls, Tools, Library & Guide -->
     <div class="panel">
-      <h2>Session Controls</h2>
-      <div class="btn-row">
+      <h2>Studio Console &amp; Library</h2>
+      
+      <!-- Transport Row: Record, Play, Stop, Loop -->
+      <div class="btn-row-4">
         <button id="btn-record" class="btn-danger" onclick="toggleRecord()">
-          <span style="font-size:14px;">&bull;</span> Record Live
+          <span style="font-size:13px;">&bull;</span> Record
         </button>
         <button id="btn-play" class="btn-primary" onclick="playSong()" disabled>
           ▶ Play
@@ -729,69 +879,97 @@
         <button id="btn-stop-playback" class="btn-secondary" onclick="stopPlayback()" disabled title="Stop playback immediately">
           ⏹ Stop
         </button>
-        <button class="btn-secondary" onclick="clearSong()">
+        <button id="btn-loop" class="btn-secondary" onclick="toggleLoop()" title="Toggle continuous loop playback">
+          🔁 Loop: OFF
+        </button>
+      </div>
+
+      <!-- Compact Speed & Hold Time Bar -->
+      <div class="compact-control-bar">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="switch-label">⚡ Speed: <b id="speed-display" style="color:var(--gold-highlight)">1.0x</b></span>
+          <div style="display:flex; gap:3px;">
+            <button class="btn-preset" style="padding:2px 6px; font-size:10px;" onclick="setSpeed(0.5, this)">0.5x</button>
+            <button class="btn-preset" style="padding:2px 6px; font-size:10px;" onclick="setSpeed(0.75, this)">0.75x</button>
+            <button class="btn-preset active-speed" style="padding:2px 6px; font-size:10px;" onclick="setSpeed(1.0, this)">1.0x</button>
+            <button class="btn-preset" style="padding:2px 6px; font-size:10px;" onclick="setSpeed(1.25, this)">1.25x</button>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="switch-label">⏱ Hold</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-time-main" checked onchange="handleTimeToggle(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Editing & Sequence Tools -->
+      <div class="btn-row-4">
+        <button id="btn-undo" class="btn-secondary" onclick="undo()" disabled title="Undo last action (Ctrl+Z)">
+          ↩ Undo
+        </button>
+        <button id="btn-redo" class="btn-secondary" onclick="redo()" disabled title="Redo action (Ctrl+Y)">
+          ↪ Redo
+        </button>
+        <button id="btn-quantize" class="btn-secondary" onclick="quantizeTimings()" disabled title="Snap note lengths to standard musical intervals">
+          🪄 Quantize
+        </button>
+        <button class="btn-secondary" onclick="clearSong()" title="Clear all notes">
           ✕ Clear
         </button>
       </div>
 
+      <!-- Primary Sheet Export Action -->
       <div class="btn-row">
-        <button id="btn-open-preview" class="btn-secondary" onclick="openExportModal()" disabled>
-          👁 View &amp; Export Sheet
+        <button id="btn-open-preview" class="btn-primary" onclick="openExportModal()" disabled style="background:#1d4ed8;">
+          👁 View &amp; Export Printable Sheet (PDF / PNG)
         </button>
       </div>
 
-      <!-- Export MIDI, Export TXT, and Copy Text Row -->
-      <div class="btn-row">
-        <button id="btn-export-midi" class="btn-secondary" onclick="exportMidiSong()" disabled title="Download song as a playable Standard MIDI (.mid) file with exact durations">
+      <!-- MIDI, TXT & Clipboard Row -->
+      <div class="btn-row-3">
+        <button id="btn-export-midi" class="btn-secondary" onclick="exportMidiSong()" disabled title="Download song as a playable Standard MIDI file">
           🎹 Export MIDI
         </button>
-        <button id="btn-export-txt" class="btn-secondary" onclick="exportTxtSong()" disabled title="Download song notes as a .txt ocarina notation file with timing">
+        <button id="btn-export-txt" class="btn-secondary" onclick="exportTxtSong()" disabled title="Download song notes as a .txt file">
           💾 Export TXT
         </button>
-        <button id="btn-copy-txt" class="btn-secondary" onclick="copyTxtSong()" disabled title="Copy ocarina notation text with timing to clipboard">
+        <button id="btn-copy-txt" class="btn-secondary" onclick="copyTxtSong()" disabled title="Copy ocarina notation text with timing">
           📋 Copy Text
         </button>
       </div>
 
-      <!-- Import Song File Button -->
+      <!-- File Import -->
       <div class="btn-row">
         <label class="file-btn-label btn-gold" title="Load an existing MIDI (.mid) or Text (.txt) file into the sequence">
-          📂 Import Song (.mid / .txt)
+          📂 Import Song File (.mid / .txt)
           <input type="file" id="file-import-input" accept=".mid,.midi,.txt" style="display:none;" onchange="handleFileImport(event)">
         </label>
       </div>
 
-      <!-- Timing Display Toggle Switch -->
-      <div class="switch-row">
-        <span class="switch-label">
-          ⏱ <span>Show Time Held on Notes</span>
-        </span>
-        <label class="switch">
-          <input type="checkbox" id="toggle-time-main" checked onchange="handleTimeToggle(this.checked)">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <h2>Type / Paste Song Notes</h2>
-      <textarea id="text-notes-input" placeholder="e.g. L, R, A, Y, X or with timing: A:0.5, X:0.25, R+^^:0.4"></textarea>
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="loadFromTextInput()">Load into Sheet</button>
-      </div>
-
-      <div class="guide-box">
-        <b>Quick Key:</b><br>
-        &bull; <b>Buttons:</b> <code>L</code>, <code>R</code>, <code>A</code>, <code>Y</code>, <code>X</code><br>
-        &bull; <b>D-Pad:</b> <code>+#</code> (+1) &bull; <code>+b</code> (-1)<br>
-        &bull; <b>Stick Vert:</b> <code>+^</code> (+1) &bull; <code>+^^</code> (+2) &bull; <code>+v</code> (-1) &bull; <code>+vv</code> (-2)<br>
-        &bull; <b>Stick Horiz:</b> <code>+~</code> or <code>+vib</code> (Vibrato)<br>
-        &bull; <b>Timing:</b> <code>NOTE:DURATION</code> (e.g. <code>A:0.5</code> or <code>X+^^:0.25s</code>)<br>
-        <i>Presets:</i>
-        <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
+      <!-- Song Presets -->
+      <div style="margin-top:2px;">
+        <span class="input-sub-label" style="font-size:10.5px;">Classic Ocarina Presets:</span>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:4px; margin-top:2px;">
           <button class="btn-preset" onclick="setPreset('ZeldasLullaby')">Zelda's Lullaby</button>
           <button class="btn-preset" onclick="setPreset('SongOfStorms')">Song of Storms</button>
           <button class="btn-preset" onclick="setPreset('SongOfTime')">Song of Time</button>
           <button class="btn-preset" onclick="setPreset('Epona')">Epona's Song</button>
+          <button class="btn-preset" onclick="setPreset('SariasSong')">Saria's Song</button>
+          <button class="btn-preset" onclick="setPreset('SongOfHealing')">Song of Healing</button>
+          <button class="btn-preset" onclick="setPreset('BoleroOfFire')">Bolero of Fire</button>
+          <button class="btn-preset" onclick="setPreset('GerudoValley')">Gerudo Valley</button>
         </div>
+      </div>
+
+      <!-- Controller Notation Guide -->
+      <div class="guide-box" style="margin-top:2px;">
+        <b>Controller Notation Guide:</b><br>
+        &bull; <b>Buttons:</b> <code>L</code>, <code>R</code>, <code>A</code>, <code>Y</code>, <code>X</code> &bull; <b>D-Pad:</b> <code>+#</code> (+1), <code>+b</code> (-1)<br>
+        &bull; <b>Stick Vert:</b> <code>+^</code> (+1), <code>+^^</code> (+2), <code>+v</code> (-1), <code>+vv</code> (-2)<br>
+        &bull; <b>Vibrato:</b> <code>+~</code> &bull; <b>Timing:</b> <code>NOTE:DURATION</code> (e.g. <code>A:0.5</code>)<br>
+        &bull; <b>Cards:</b> Tap body to audition &bull; Tap <code>⏱ Duration</code> to edit &bull; Tap <code>✕</code> to delete.
       </div>
     </div>
   </div>
@@ -806,14 +984,16 @@
 
   <!-- 2. EXPANDED CHROMATIC FINGERING GUIDE -->
   <div class="panel">
-    <h2>Chromatic Fingering &amp; Note Guide (Tap Row to Test)</h2>
+    <h2>Chromatic Fingering &amp; Note Guide (Tap Row to Test or "+ Add" to Song)</h2>
     <div class="chart-container">
       <table class="fingering-table">
         <thead>
           <tr>
-            <th style="width: 20%;">Pitch</th>
-            <th style="width: 48%;">Primary Controller Combination</th>
-            <th style="width: 32%;">Enharmonic Alternate</th>
+            <th style="width: 14%;">Pitch</th>
+            <th style="width: 13%;">Notation</th>
+            <th style="width: 38%;">Primary Controller Combination</th>
+            <th style="width: 25%;">Enharmonic Alternate</th>
+            <th style="width: 10%; text-align:center;">Action</th>
           </tr>
         </thead>
         <tbody id="fingering-table-body">
@@ -885,25 +1065,25 @@ function midiToFreq(midi) {
 }
 
 const CHROMATIC_GUIDE = [
-  { pitch: "B3", midi: 59, btn: "L", mod: "Stick Down (Full) + D-Pad Down", alt: "---", sY: 1.0, dpad: -1, stickDir: "down-full" },
-  { pitch: "C4", midi: 60, btn: "L", mod: "Stick Down (Full)", alt: "---", sY: 1.0, dpad: 0, stickDir: "down-full" },
-  { pitch: "C#4 / Db4", midi: 61, btn: "L", mod: "D-Pad Down", alt: "---", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "D4", midi: 62, btn: "L", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "D#4 / Eb4", midi: 63, btn: "L", mod: "D-Pad Up", alt: "R + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "E4", midi: 64, btn: "R", mod: "D-Pad Down", alt: "L + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "F4", midi: 65, btn: "R", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "F#4 / Gb4", midi: 66, btn: "R", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "G4", midi: 67, btn: "R", mod: "Stick Up (Full)", alt: "A + Stick Down (Full)", sY: -1.0, dpad: 0, stickDir: "up-full" },
-  { pitch: "G#4 / Ab4", midi: 68, btn: "A", mod: "D-Pad Down", alt: "R + Stick Up (Full) + D-Pad Up", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "A4", midi: 69, btn: "A", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "A#4 / Bb4", midi: 70, btn: "A", mod: "D-Pad Up", alt: "Y + D-Pad Down", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "B4", midi: 71, btn: "Y", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "C5", midi: 72, btn: "Y", mod: "D-Pad Up", alt: "X + Stick Down (Full)", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "C#5 / Db5", midi: 73, btn: "X", mod: "D-Pad Down", alt: "Y + Stick Up (Full)", sY: 0, dpad: -1, stickDir: null },
-  { pitch: "D5", midi: 74, btn: "X", mod: "(Base Note)", alt: "---", sY: 0, dpad: 0, stickDir: null },
-  { pitch: "D#5 / Eb5", midi: 75, btn: "X", mod: "D-Pad Up", alt: "---", sY: 0, dpad: 1, stickDir: null },
-  { pitch: "E5", midi: 76, btn: "X", mod: "Stick Up (Full)", alt: "---", sY: -1.0, dpad: 0, stickDir: "up-full" },
-  { pitch: "F5", midi: 77, btn: "X", mod: "Stick Up (Full) + D-Pad Up", alt: "---", sY: -1.0, dpad: 1, stickDir: "up-full" }
+  { pitch: "B3", midi: 59, btn: "L", notation: "L+b+vv", mod: "Stick Down (Full) + D-Pad Down", alt: "---", altNotation: "---", sY: 1.0, dpad: -1, stickDir: "down-full" },
+  { pitch: "C4", midi: 60, btn: "L", notation: "L+vv", mod: "Stick Down (Full)", alt: "---", altNotation: "---", sY: 1.0, dpad: 0, stickDir: "down-full" },
+  { pitch: "C#4 / Db4", midi: 61, btn: "L", notation: "L+b", mod: "D-Pad Down", alt: "---", altNotation: "---", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "D4", midi: 62, btn: "L", notation: "L", mod: "(Base Note)", alt: "---", altNotation: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "D#4 / Eb4", midi: 63, btn: "L", notation: "L+#", mod: "D-Pad Up", alt: "R + Stick Down (Full)", altNotation: "R+vv", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "E4", midi: 64, btn: "R", notation: "R+b", mod: "D-Pad Down", alt: "L + Stick Up (Full)", altNotation: "L+^^", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "F4", midi: 65, btn: "R", notation: "R", mod: "(Base Note)", alt: "---", altNotation: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "F#4 / Gb4", midi: 66, btn: "R", notation: "R+#", mod: "D-Pad Up", alt: "---", altNotation: "---", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "G4", midi: 67, btn: "R", notation: "R+^^", mod: "Stick Up (Full)", alt: "A + Stick Down (Full)", altNotation: "A+vv", sY: -1.0, dpad: 0, stickDir: "up-full" },
+  { pitch: "G#4 / Ab4", midi: 68, btn: "A", notation: "A+b", mod: "D-Pad Down", alt: "R + Stick Up (Full) + D-Pad Up", altNotation: "R+#+^^", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "A4", midi: 69, btn: "A", notation: "A", mod: "(Base Note)", alt: "---", altNotation: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "A#4 / Bb4", midi: 70, btn: "A", notation: "A+#", mod: "D-Pad Up", alt: "Y + D-Pad Down", altNotation: "Y+b", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "B4", midi: 71, btn: "Y", notation: "Y", mod: "(Base Note)", alt: "---", altNotation: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "C5", midi: 72, btn: "Y", notation: "Y+#", mod: "D-Pad Up", alt: "X + Stick Down (Full)", altNotation: "X+vv", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "C#5 / Db5", midi: 73, btn: "X", notation: "X+b", mod: "D-Pad Down", alt: "Y + Stick Up (Full)", altNotation: "Y+^^", sY: 0, dpad: -1, stickDir: null },
+  { pitch: "D5", midi: 74, btn: "X", notation: "X", mod: "(Base Note)", alt: "---", altNotation: "---", sY: 0, dpad: 0, stickDir: null },
+  { pitch: "D#5 / Eb5", midi: 75, btn: "X", notation: "X+#", mod: "D-Pad Up", alt: "---", altNotation: "---", sY: 0, dpad: 1, stickDir: null },
+  { pitch: "E5", midi: 76, btn: "X", notation: "X+^^", mod: "Stick Up (Full)", alt: "---", altNotation: "---", sY: -1.0, dpad: 0, stickDir: "up-full" },
+  { pitch: "F5", midi: 77, btn: "X", notation: "X+#+^^", mod: "Stick Up (Full) + D-Pad Up", alt: "---", altNotation: "---", sY: -1.0, dpad: 1, stickDir: "up-full" }
 ];
 
 function getDpadSvg(direction = 'up', size = 20) {
@@ -947,6 +1127,20 @@ function getStickSvg(direction = 'up', intensity = 'full', size = 20) {
   </svg>`;
 }
 
+function appendNoteFromTable(notation, pitch) {
+  const cInput = document.getElementById('text-notes-input');
+  const rInput = document.getElementById('raw-notes-input');
+
+  const cVal = cInput.value.trim();
+  const rVal = rInput.value.trim();
+
+  cInput.value = cVal ? `${cVal}, ${notation}:0.38` : `${notation}:0.38`;
+  rInput.value = rVal ? `${rVal}, ${pitch}:0.38` : `${pitch}:0.38`;
+
+  loadFromTextInput();
+  saveToLocalStorage();
+}
+
 function populateFingeringTable() {
   const tbody = document.getElementById('fingering-table-body');
   tbody.innerHTML = "";
@@ -960,17 +1154,27 @@ function populateFingeringTable() {
     if (item.sY > 0) icons.push(getStickSvg('down', 'full', 16));
     const iconHtml = icons.length ? `<span style="display:inline-flex; gap:3px; margin:0 3px; vertical-align:middle;">${icons.join('')}</span>` : '';
 
+    const altDisplay = item.alt !== "---" 
+      ? `<span>${item.alt}</span> <code class="notation-code alt-notation">${item.altNotation}</code>`
+      : `<span style="color:#64748b;">---</span>`;
+
+    const pitchName = item.pitch.split('/')[0].trim();
+
     tr.innerHTML = `
-      <td style="font-weight:700; color:#fff; font-size:13px;">${item.pitch}</td>
+      <td style="font-weight:700; color:#fff; font-size:12.5px;">${item.pitch}</td>
+      <td><code class="notation-code">${item.notation}</code></td>
       <td><span class="pill" style="background:${bg}">${item.btn}</span> ${iconHtml} + ${item.mod}</td>
-      <td style="color:#94a3b8; font-size:12px;">${item.alt}</td>
+      <td style="color:#cbd5e1; font-size:11.5px;">${altDisplay}</td>
+      <td style="text-align:center;">
+        <button class="btn-preset" style="padding:3px 7px; color:var(--gold-highlight); font-weight:700;" title="Append note to sequence" onclick="event.stopPropagation(); appendNoteFromTable('${item.notation}', '${pitchName}')">+ Add</button>
+      </td>
     `;
     tr.onclick = () => {
       startNote(item.midi);
       const mock = { L: false, R: false, A: false, X: false, Y: false, dUp: item.dpad === 1, dDown: item.dpad === -1, stickX: 0, stickY: item.sY, vibrato: false };
       mock[item.btn] = true;
       updateControllerSVG(mock);
-      document.getElementById('mon-pitch').innerText = item.pitch.split('/')[0].trim();
+      document.getElementById('mon-pitch').innerText = pitchName;
       document.getElementById('mon-detune').innerText = `${Math.round(-item.sY * 200 + item.dpad * 100)} cents`;
       setTimeout(() => {
         stopNote();
@@ -1125,17 +1329,22 @@ function stopNote() {
 
 /**
  * ==============================================================================
- * MODULE 3: INPUT SUBSYSTEM & JOYSTICK (TOUCH & DESKTOP STABLE)
+ * MODULE 3: INPUT SUBSYSTEM & JOYSTICK
  * ==============================================================================
  */
 let isRecording = false;
 let isPlaying = false;
+let isLooping = false;
 let playbackAborted = false;
 let activePlaybackTimeout = null;
 let recordStartTime = 0;
 let recordedEvents = [];
 let activeRecordedNote = null;
 let showNoteDurations = true;
+let playbackSpeed = 1.0;
+
+let undoStack = [];
+let redoStack = [];
 
 let keyboardState = { L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, vibrato: false };
 let touchActiveButtons = new Set();
@@ -1145,7 +1354,66 @@ let stickState = { x: 0, y: 0 };
 let isDraggingStick = false;
 let currentNoteState = null;
 
+// Undo & Redo History Management
+function pushHistory() {
+  undoStack.push(JSON.stringify(recordedEvents));
+  if (undoStack.length > 40) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoButtons();
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  if (isPlaying) stopPlayback();
+  redoStack.push(JSON.stringify(recordedEvents));
+  const state = undoStack.pop();
+  recordedEvents = JSON.parse(state);
+  recalcStartTimes();
+  syncInputsFromEvents();
+  renderSheetMusic();
+  updateSessionButtons();
+  updateUndoRedoButtons();
+  saveToLocalStorage();
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  if (isPlaying) stopPlayback();
+  undoStack.push(JSON.stringify(recordedEvents));
+  const state = redoStack.pop();
+  recordedEvents = JSON.parse(state);
+  recalcStartTimes();
+  syncInputsFromEvents();
+  renderSheetMusic();
+  updateSessionButtons();
+  updateUndoRedoButtons();
+  saveToLocalStorage();
+}
+
+function updateUndoRedoButtons() {
+  const btnUndo = document.getElementById('btn-undo');
+  const btnRedo = document.getElementById('btn-redo');
+  if (btnUndo) btnUndo.disabled = undoStack.length === 0 || isPlaying || isRecording;
+  if (btnRedo) btnRedo.disabled = redoStack.length === 0 || isPlaying || isRecording;
+}
+
 window.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+    if (e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      if (e.shiftKey) redo();
+      else undo();
+      return;
+    }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+    if (e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      redo();
+      return;
+    }
+  }
+
   if (e.target.tagName === 'TEXTAREA' || e.repeat) return;
   const k = e.key.toLowerCase();
   if (k === 'q') keyboardState.L = true;
@@ -1157,6 +1425,7 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowDown') keyboardState.dDown = true;
   if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || k === 'v') keyboardState.vibrato = true;
 });
+
 window.addEventListener('keyup', (e) => {
   if (e.target.tagName === 'TEXTAREA') return;
   const k = e.key.toLowerCase();
@@ -1176,6 +1445,22 @@ window.addEventListener("gamepadconnected", (e) => {
 window.addEventListener("gamepaddisconnected", () => {
   document.getElementById('gamepad-status').innerHTML = `<span class="badge badge-disconnected">No Gamepad Detected</span>`;
 });
+
+function setSpeed(speed, btnEl) {
+  playbackSpeed = speed;
+  document.getElementById('speed-display').innerText = `${speed.toFixed(speed % 1 === 0 ? 1 : 2)}x`;
+  document.querySelectorAll('.active-speed').forEach(b => b.classList.remove('active-speed'));
+  if (btnEl) btnEl.classList.add('active-speed');
+}
+
+function toggleLoop() {
+  isLooping = !isLooping;
+  const btn = document.getElementById('btn-loop');
+  if (btn) {
+    btn.innerHTML = isLooping ? `🔁 Loop: ON` : `🔁 Loop: OFF`;
+    btn.className = isLooping ? `btn-success` : `btn-secondary`;
+  }
+}
 
 function setupAnalogStickDrag() {
   const stickGroup = document.getElementById('grp-stick');
@@ -1278,9 +1563,12 @@ function updateSessionButtons() {
   const btnExpMidi = document.getElementById('btn-export-midi');
   const btnExpTxt = document.getElementById('btn-export-txt');
   const btnCopyTxt = document.getElementById('btn-copy-txt');
+  const btnQuant = document.getElementById('btn-quantize');
   if (btnExpMidi) btnExpMidi.disabled = !hasNotes || isRecording || isPlaying;
   if (btnExpTxt) btnExpTxt.disabled = !hasNotes || isRecording || isPlaying;
   if (btnCopyTxt) btnCopyTxt.disabled = !hasNotes || isRecording || isPlaying;
+  if (btnQuant) btnQuant.disabled = !hasNotes || isRecording || isPlaying;
+  updateUndoRedoButtons();
 }
 
 function handleTimeToggle(isChecked) {
@@ -1432,15 +1720,14 @@ function pollInput() {
 
 function commitActiveNote() {
   if (activeRecordedNote) {
+    pushHistory();
     const nowSec = (performance.now() - recordStartTime) / 1000;
     activeRecordedNote.duration = Math.max(0.12, nowSec - activeRecordedNote.startTime);
     recordedEvents.push(activeRecordedNote);
+    syncInputsFromEvents();
     renderSheetMusic();
     updateSessionButtons();
-    const textNotesInput = document.getElementById('text-notes-input');
-    if (textNotesInput) {
-      textNotesInput.value = recordedEvents.map((ev, idx, arr) => eventToTextToken(ev, idx, arr)).join(", ");
-    }
+    saveToLocalStorage();
     activeRecordedNote = null;
   }
 }
@@ -1482,13 +1769,302 @@ function toggleSVGClass(id, className, condition) {
 
 /**
  * ==============================================================================
- * MODULE 4: TEXT SONG PARSER & PRESET IMPORTER
+ * MODULE 4: CARD EDITING, DELETION, AUDITION, QUANTIZE & LOCALSTORAGE
+ * ==============================================================================
+ */
+function recalcStartTimes() {
+  let cur = 0;
+  for (let i = 0; i < recordedEvents.length; i++) {
+    recordedEvents[i].startTime = cur;
+    cur += (recordedEvents[i].duration || 0.38) + 0.05;
+  }
+}
+
+function deleteCard(idx) {
+  if (isPlaying) stopPlayback();
+  pushHistory();
+  recordedEvents.splice(idx, 1);
+  recalcStartTimes();
+  syncInputsFromEvents();
+  renderSheetMusic();
+  updateSessionButtons();
+  saveToLocalStorage();
+}
+
+function editCardDuration(idx) {
+  if (isPlaying) stopPlayback();
+  const item = recordedEvents[idx];
+  if (!item) return;
+  const oldDur = (item.duration || 0.38).toFixed(2);
+  const promptVal = prompt(`Edit hold time (in seconds) for Step #${idx + 1} (${item.pitch}):\nPresets: 0.25 (short), 0.5 (medium), 1.0 (long)`, oldDur);
+  if (promptVal !== null) {
+    let cleanVal = promptVal.trim().toLowerCase();
+    let newDur = parseFloat(cleanVal);
+    if (cleanVal.includes('ms')) newDur /= 1000;
+    if (!isNaN(newDur) && newDur > 0.02) {
+      pushHistory();
+      item.duration = Math.max(0.05, newDur);
+      recalcStartTimes();
+      syncInputsFromEvents();
+      renderSheetMusic();
+      saveToLocalStorage();
+    }
+  }
+}
+
+function auditionCard(idx) {
+  if (isPlaying || isRecording) return;
+  const item = recordedEvents[idx];
+  if (!item || item.isRest) return;
+  startNote(item.midi, 0, item.hasVibrato);
+
+  let stickY = 0;
+  let dUp = item.dpad === 1;
+  let dDown = item.dpad === -1;
+  if (item.stickDir === 'up-full') stickY = -1.0;
+  else if (item.stickDir === 'up-half') stickY = -0.5;
+  else if (item.stickDir === 'down-full') stickY = 1.0;
+  else if (item.stickDir === 'down-half') stickY = 0.5;
+
+  const mock = { L: false, R: false, A: false, X: false, Y: false, dUp, dDown, stickX: 0, stickY, vibrato: item.hasVibrato };
+  mock[item.button] = true;
+  updateControllerSVG(mock);
+
+  document.getElementById('mon-pitch').innerText = item.pitch;
+  document.getElementById('mon-detune').innerText = `${Math.round(-stickY * 200 + (dUp ? 100 : dDown ? -100 : 0))} cents`;
+  document.getElementById('mon-expr').innerText = item.hasVibrato ? "Vibrato" : "Audition";
+
+  setTimeout(() => {
+    stopNote();
+    updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
+    document.getElementById('mon-pitch').innerText = "---";
+  }, 420);
+}
+
+function quantizeTimings() {
+  if (recordedEvents.length === 0) return;
+  if (isPlaying) stopPlayback();
+  pushHistory();
+  const grid = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+  recordedEvents.forEach(e => {
+    let closest = grid[0];
+    let minDiff = Math.abs(e.duration - grid[0]);
+    for (let g of grid) {
+      const diff = Math.abs(e.duration - g);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = g;
+      }
+    }
+    e.duration = closest;
+  });
+  recalcStartTimes();
+  syncInputsFromEvents();
+  renderSheetMusic();
+  saveToLocalStorage();
+
+  const btn = document.getElementById('btn-quantize');
+  if (btn) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = "✓ Snapped!";
+    btn.style.color = "#4ade80";
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ""; }, 1400);
+  }
+}
+
+function syncInputsFromEvents() {
+  const textNotesInput = document.getElementById('text-notes-input');
+  if (textNotesInput) {
+    textNotesInput.value = recordedEvents.map((ev, idx, arr) => eventToTextToken(ev, idx, arr)).join(", ");
+  }
+  const rawNotesInput = document.getElementById('raw-notes-input');
+  if (rawNotesInput) {
+    rawNotesInput.value = recordedEvents.map(ev => `${ev.pitch}:${ev.duration.toFixed(2)}`).join(", ");
+  }
+}
+
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem('oot_studio_events', JSON.stringify(recordedEvents));
+  } catch(e) {}
+}
+
+function loadFromLocalStorage() {
+  try {
+    const saved = localStorage.getItem('oot_studio_events');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        recordedEvents = parsed;
+        syncInputsFromEvents();
+        renderSheetMusic();
+        updateSessionButtons();
+      }
+    }
+  } catch(e) {}
+}
+window.addEventListener('load', loadFromLocalStorage);
+
+/**
+ * ==============================================================================
+ * MODULE 5: TRANSLATOR, FORGIVING PARSER & AI PROMPT COPY
+ * ==============================================================================
+ */
+const PITCH_SEMITONES = {
+  'C': 0, 'B#': 0,
+  'C#': 1, 'Db': 1,
+  'D': 2,
+  'D#': 3, 'Eb': 3,
+  'E': 4, 'Fb': 4,
+  'F': 5, 'E#': 5,
+  'F#': 6, 'Gb': 6,
+  'G': 7,
+  'G#': 8, 'Ab': 8,
+  'A': 9,
+  'A#': 10, 'Bb': 10,
+  'B': 11, 'Cb': 11
+};
+
+async function copyAiPrompt() {
+  const promptText = `Write out the melody for [Song Name] using standard pitch notation with durations in seconds, formatted as a comma-separated list: Note:Duration (e.g., D4:0.5, F#4:0.25, A4:1.0). Keep all pitches strictly within the range of B3 to F5 (19 semitones). If the song is outside that range, transpose the entire key so it fits. Output only the note list.`;
+  const btn = document.getElementById('btn-copy-ai-prompt');
+  try {
+    await navigator.clipboard.writeText(promptText);
+    const origText = btn.innerHTML;
+    btn.innerHTML = `✓ Copied!`;
+    setTimeout(() => { btn.innerHTML = origText; }, 2000);
+  } catch (err) {
+    alert("Copied Prompt:\n\n" + promptText);
+  }
+}
+
+function translateRawNotesToController() {
+  if (isPlaying) stopPlayback();
+  const rawInput = document.getElementById('raw-notes-input');
+  const rawVal = rawInput.value.trim();
+  const alertEl = document.getElementById('translate-alert');
+  alertEl.style.display = 'none';
+
+  if (!rawVal) {
+    alert("Please enter some raw pitch notes first.");
+    return;
+  }
+
+  const tokens = rawVal.split(/[\s,]+/);
+  let parsedNotes = [];
+
+  for (let tok of tokens) {
+    tok = tok.trim();
+    if (!tok) continue;
+
+    const parts = tok.split(':');
+    let pitchStr = parts[0].trim().replace('♯', '#').replace('♭', 'b');
+    let dur = 0.38;
+    let gap = 0.06;
+
+    if (parts.length > 1) {
+      let val = parseFloat(parts[1]);
+      if (!isNaN(val)) {
+        if (parts[1].toLowerCase().includes('ms')) val /= 1000;
+        dur = Math.max(0.08, val);
+      }
+    }
+    if (parts.length > 2) {
+      let valGap = parseFloat(parts[2]);
+      if (!isNaN(valGap)) {
+        if (parts[2].toLowerCase().includes('ms')) valGap /= 1000;
+        gap = Math.max(0, valGap);
+      }
+    }
+
+    const upper = pitchStr.toUpperCase();
+    if (upper.startsWith('REST') || upper.startsWith('_') || upper.startsWith('WAIT') || upper.startsWith('PAUSE')) {
+      parsedNotes.push({ isRest: true, dur: dur, gap: gap });
+      continue;
+    }
+
+    // Handles sharps, flats (b/B), and octaves correctly
+    const m = pitchStr.match(/^([a-gA-G])([#bB]?)(-?\d+)?$/);
+    if (!m) continue;
+
+    const letter = m[1].toUpperCase();
+    let acc = m[2] ? m[2].toLowerCase() : '';
+    let noteKey = letter + acc;
+    const octave = m[3] !== undefined ? parseInt(m[3], 10) : 4;
+
+    const semi = PITCH_SEMITONES[noteKey];
+    if (semi === undefined) continue;
+
+    const midi = (octave + 1) * 12 + semi;
+    parsedNotes.push({ isRest: false, midi: midi, dur: dur, gap: gap });
+  }
+
+  const pitchNotes = parsedNotes.filter(n => !n.isRest);
+  if (pitchNotes.length === 0) {
+    alert("No valid notes recognized. Ensure you use note names like D4, F#4, A4, or Bb4.");
+    return;
+  }
+
+  // SMART AUTO-TRANSPOSE: Ocarina range is B3 (59) to F5 (77)
+  let minMidi = Math.min(...pitchNotes.map(n => n.midi));
+  let maxMidi = Math.max(...pitchNotes.map(n => n.midi));
+  let transposeShift = 0;
+
+  const span = maxMidi - minMidi;
+  if (span <= 18) {
+    while (minMidi + transposeShift < 59) transposeShift += 12;
+    while (maxMidi + transposeShift > 77) transposeShift -= 12;
+    while (minMidi + transposeShift < 59) transposeShift += 1;
+    while (maxMidi + transposeShift > 77) transposeShift -= 1;
+  } else {
+    const midPoint = (minMidi + maxMidi) / 2;
+    const ocarinaCenter = 68;
+    transposeShift = Math.round(ocarinaCenter - midPoint);
+  }
+
+  if (transposeShift !== 0) {
+    parsedNotes.forEach(n => {
+      if (!n.isRest) n.midi += transposeShift;
+    });
+    alertEl.style.display = 'block';
+    alertEl.className = "status-alert info";
+    alertEl.innerText = `🎵 Smart Auto-Transpose: Melody shifted by ${transposeShift > 0 ? '+' : ''}${transposeShift} semitone(s) to match the Switch 2 Ocarina range (B3–F5).`;
+  } else {
+    alertEl.style.display = 'block';
+    alertEl.className = "status-alert success";
+    alertEl.innerText = `✓ Perfectly in range (B3–F5). No transposition needed!`;
+  }
+
+  let controllerTokens = [];
+  parsedNotes.forEach(n => {
+    if (n.isRest) {
+      controllerTokens.push(`REST:${n.dur.toFixed(2)}`);
+      return;
+    }
+    const clampedMidi = Math.max(59, Math.min(77, n.midi));
+    const guideItem = CHROMATIC_GUIDE.find(g => g.midi === clampedMidi) || CHROMATIC_GUIDE[3];
+    let tok = `${guideItem.notation}:${n.dur.toFixed(2)}`;
+    if (n.gap > 0.08) tok += `:${n.gap.toFixed(2)}`;
+    controllerTokens.push(tok);
+  });
+
+  const finalControllerString = controllerTokens.join(", ");
+  document.getElementById('text-notes-input').value = finalControllerString;
+  loadFromTextInput();
+  saveToLocalStorage();
+}
+
+/**
+ * ==============================================================================
+ * MODULE 6: CONTROLLER TEXT SONG PARSER & EXPANDED PRESETS
  * ==============================================================================
  */
 function loadFromTextInput() {
+  if (isPlaying) stopPlayback();
   const txt = document.getElementById('text-notes-input').value;
   if (!txt.trim()) return;
 
+  pushHistory();
   const tokens = txt.trim().split(/[\s,]+/);
   const parsed = [];
   let currentTime = 0;
@@ -1498,7 +2074,7 @@ function loadFromTextInput() {
     if (!rawTok) return;
 
     const upperTok = rawTok.toUpperCase();
-    if (upperTok.startsWith('REST') || upperTok.startsWith('_') || upperTok.startsWith('WAIT')) {
+    if (upperTok.startsWith('REST') || upperTok.startsWith('_') || upperTok.startsWith('WAIT') || upperTok.startsWith('PAUSE')) {
       const restParts = rawTok.split(':');
       let restDur = 0.44;
       if (restParts.length > 1) {
@@ -1508,6 +2084,20 @@ function loadFromTextInput() {
           restDur = Math.max(0.05, val);
         }
       }
+      parsed.push({
+        isRest: true,
+        button: 'REST',
+        dpad: 0,
+        stickDir: null,
+        comboDisplay: "(Pause)",
+        comboPlain: "REST",
+        pdfMod: "REST",
+        hasVibrato: false,
+        pitch: "REST",
+        midi: null,
+        startTime: currentTime,
+        duration: restDur
+      });
       currentTime += restDur;
       return;
     }
@@ -1580,6 +2170,7 @@ function loadFromTextInput() {
     const pitch = midiToName(finalMidi);
 
     parsed.push({
+      isRest: false,
       button: btn,
       dpad: dpad,
       stickDir: stickDir,
@@ -1599,25 +2190,60 @@ function loadFromTextInput() {
     recordedEvents = parsed;
     renderSheetMusic();
     updateSessionButtons();
+    saveToLocalStorage();
+
+    const rawBox = document.getElementById('raw-notes-input');
+    if (rawBox && !rawBox.value.trim()) {
+      rawBox.value = recordedEvents.map(e => `${e.pitch}:${e.duration.toFixed(2)}`).join(", ");
+    }
   }
 }
 
 function setPreset(name) {
   const presets = {
-    'ZeldasLullaby': "R+#:1.0, A:0.5, R+b:1.5, R+#:1.0, A:0.5, R+b:1.5, R+#:1.0, A:0.5, X+^^:1.0, X:0.5, A:1.0, R+^^:0.25, R+#:0.25, R+b:1.0",
-    'SongOfStorms':  "L, R, X, L, R, X",
-    'SongOfTime':    "A:0.5, L:1.0, R:0.5, A:0.5, L:1.0, R:0.5, A:0.25, Y+#:0.25, Y:0.5, R+^^:0.5, R:0.25, R+^^:0.25, A:0.5, L:0.5, L+vv:0.25, R+b:0.25, L:1.0",
-    'Epona':         "X, Y, A, X, Y, A"
+    'ZeldasLullaby': {
+      raw: "F#4:1.0, A4:0.5, E4:1.5, F#4:1.0, A4:0.5, E4:1.5, F#4:1.0, A4:0.5, E5:1.0, D5:0.5, A4:1.0, G4:0.25, F#4:0.25, E4:1.0",
+      controller: "R+#:1.0, A:0.5, R+b:1.5, R+#:1.0, A:0.5, R+b:1.5, R+#:1.0, A:0.5, X+^^:1.0, X:0.5, A:1.0, R+^^:0.25, R+#:0.25, R+b:1.0"
+    },
+    'SongOfStorms': {
+      raw: "D4:0.4, F4:0.4, D5:0.8, D4:0.4, F4:0.4, D5:0.8, E5:0.6, F5:0.2, E5:0.2, F5:0.2, E5:0.2, C5:0.4, A4:0.8",
+      controller: "L:0.4, R:0.4, X:0.8, L:0.4, R:0.4, X:0.8, X+^^:0.6, X+#+^^:0.2, X+^^:0.2, X+#+^^:0.2, X+^^:0.2, Y+#:0.4, A:0.8"
+    },
+    'SongOfTime': {
+      raw: "A4:0.5, D4:1.0, F4:0.5, A4:0.5, D4:1.0, F4:0.5, A4:0.25, C5:0.25, B4:0.5, G4:0.5, F4:0.25, G4:0.25, A4:0.5, D4:0.5, C4:0.25, E4:0.25, D4:1.0",
+      controller: "A:0.5, L:1.0, R:0.5, A:0.5, L:1.0, R:0.5, A:0.25, Y+#:0.25, Y:0.5, R+^^:0.5, R:0.25, R+^^:0.25, A:0.5, L:0.5, L+vv:0.25, R+b:0.25, L:1.0"
+    },
+    'Epona': {
+      raw: "D5:0.5, B4:0.5, A4:1.0, D5:0.5, B4:0.5, A4:1.0, D5:0.5, B4:0.5, A4:0.5, B4:0.5, A4:1.0",
+      controller: "X:0.5, Y:0.5, A:1.0, X:0.5, Y:0.5, A:1.0, X:0.5, Y:0.5, A:0.5, Y:0.5, A:1.0"
+    },
+    'SariasSong': {
+      raw: "F4:0.3, A4:0.3, B4:0.6, F4:0.3, A4:0.3, B4:0.6, F4:0.3, A4:0.3, B4:0.3, E5:0.3, D5:0.6, B4:0.3, C5:0.3, B4:0.3, G4:0.3, E4:0.9",
+      controller: "R:0.3, A:0.3, Y:0.6, R:0.3, A:0.3, Y:0.6, R:0.3, A:0.3, Y:0.3, X+^^:0.3, X:0.6, Y:0.3, Y+#:0.3, Y:0.3, R+^^:0.3, R+b:0.9"
+    },
+    'SongOfHealing': {
+      raw: "B4:0.5, A4:0.5, F4:0.5, B4:0.5, A4:0.5, F4:0.5, B4:0.5, A4:0.5, E4:0.5, D4:0.5, E4:1.0",
+      controller: "Y:0.5, A:0.5, R:0.5, Y:0.5, A:0.5, R:0.5, Y:0.5, A:0.5, R+b:0.5, L:0.5, R+b:1.0"
+    },
+    'BoleroOfFire': {
+      raw: "F4:0.25, D4:0.25, F4:0.25, D4:0.25, A4:0.25, F4:0.25, A4:0.25, F4:0.75",
+      controller: "R:0.25, L:0.25, R:0.25, L:0.25, A:0.25, R:0.25, A:0.25, R:0.75"
+    },
+    'GerudoValley': {
+      raw: "C#4:0.25, D4:0.25, F#4:0.25, A4:0.25, D5:0.5, C#5:0.5, B4:0.5, A4:0.5, G4:0.5, F#4:0.5, E4:1.0",
+      controller: "L+b:0.25, L:0.25, R+#:0.25, A:0.25, X:0.5, X+b:0.5, Y:0.5, A:0.5, R+^^:0.5, R+#:0.5, R+b:1.0"
+    }
   };
   if (presets[name]) {
-    document.getElementById('text-notes-input').value = presets[name];
+    document.getElementById('raw-notes-input').value = presets[name].raw;
+    document.getElementById('text-notes-input').value = presets[name].controller;
     loadFromTextInput();
   }
 }
 
 /**
  * ==============================================================================
- * MODULE 5: SEQUENCER RECORDING & PLAYBACK
+ * MODULE 7: SEQUENCER RECORDING & PLAYBACK WITH PLAYHEAD & LOOP
  * ==============================================================================
  */
 function sleepCancellable(ms) {
@@ -1629,6 +2255,10 @@ function sleepCancellable(ms) {
   });
 }
 
+function clearPlayheadGlow() {
+  document.querySelectorAll('#sheet-music .note-card').forEach(c => c.classList.remove('active-playhead'));
+}
+
 function stopPlayback() {
   if (!isPlaying) return;
   playbackAborted = true;
@@ -1636,6 +2266,7 @@ function stopPlayback() {
     clearTimeout(activePlaybackTimeout);
     activePlaybackTimeout = null;
   }
+  clearPlayheadGlow();
   stopNote();
   updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
   document.getElementById('mon-pitch').innerText = "---";
@@ -1650,18 +2281,19 @@ function toggleRecord() {
   const btn = document.getElementById('btn-record');
   if (!isRecording) {
     if (isPlaying) stopPlayback();
+    pushHistory();
     isRecording = true;
     recordedEvents = [];
     activeRecordedNote = null;
     recordStartTime = performance.now();
-    btn.innerHTML = `<span style="font-size:14px;">■</span> Stop Recording`;
+    btn.innerHTML = `<span style="font-size:13px;">■</span> Stop`;
     btn.className = "btn-danger";
     updateSessionButtons();
     renderSheetMusic();
   } else {
     isRecording = false;
     commitActiveNote();
-    btn.innerHTML = `<span style="font-size:14px;">&bull;</span> Record Live`;
+    btn.innerHTML = `<span style="font-size:13px;">&bull;</span> Record`;
     btn.className = "btn-danger";
     updateSessionButtons();
   }
@@ -1670,12 +2302,17 @@ function toggleRecord() {
 function clearSong() {
   if (isPlaying) stopPlayback();
   if (isRecording) toggleRecord();
+  pushHistory();
+  clearPlayheadGlow();
   recordedEvents = [];
   activeRecordedNote = null;
   document.getElementById('clock').innerText = "00:00.0";
   document.getElementById('text-notes-input').value = "";
+  document.getElementById('raw-notes-input').value = "";
+  document.getElementById('translate-alert').style.display = 'none';
   updateSessionButtons();
   renderSheetMusic();
+  saveToLocalStorage();
 }
 
 async function playSong() {
@@ -1685,44 +2322,69 @@ async function playSong() {
   document.getElementById('btn-record').disabled = true;
   updateSessionButtons();
 
-  let playheadTime = 0;
+  do {
+    let playheadTime = 0;
+    const speed = Math.max(0.2, playbackSpeed || 1.0);
+    const cards = document.querySelectorAll('#sheet-music .note-card');
 
-  for (let i = 0; i < recordedEvents.length; i++) {
-    if (playbackAborted) break;
-
-    const item = recordedEvents[i];
-    const restDelay = item.startTime - playheadTime;
-    if (restDelay > 0.005) {
-      await sleepCancellable(restDelay * 1000);
+    for (let i = 0; i < recordedEvents.length; i++) {
       if (playbackAborted) break;
+
+      const item = recordedEvents[i];
+      const restDelay = (item.startTime - playheadTime) / speed;
+      if (restDelay > 0.005) {
+        clearPlayheadGlow();
+        await sleepCancellable(restDelay * 1000);
+        if (playbackAborted) break;
+      }
+
+      clearPlayheadGlow();
+      if (cards[i]) {
+        cards[i].classList.add('active-playhead');
+        cards[i].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+
+      if (!item.isRest) {
+        let stickY = 0;
+        let dUp = item.dpad === 1;
+        let dDown = item.dpad === -1;
+        if (item.stickDir === 'up-full') stickY = -1.0;
+        else if (item.stickDir === 'up-half') stickY = -0.5;
+        else if (item.stickDir === 'down-full') stickY = 1.0;
+        else if (item.stickDir === 'down-half') stickY = 0.5;
+
+        const mock = { L: false, R: false, A: false, X: false, Y: false, dUp, dDown, stickX: 0, stickY, vibrato: item.hasVibrato };
+        mock[item.button] = true;
+        updateControllerSVG(mock);
+
+        document.getElementById('mon-pitch').innerText = item.pitch;
+        document.getElementById('mon-detune').innerText = `${Math.round(-stickY * 200 + (dUp ? 100 : dDown ? -100 : 0))} cents`;
+        document.getElementById('mon-expr').innerText = item.hasVibrato ? "Vibrato" : "Playing";
+
+        startNote(item.midi, 0, item.hasVibrato);
+      } else {
+        document.getElementById('mon-pitch').innerText = "REST";
+        document.getElementById('mon-detune').innerText = "0 cents";
+        document.getElementById('mon-expr').innerText = "Rest";
+      }
+
+      await sleepCancellable((item.duration / speed) * 1000);
+      stopNote();
+
+      updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
+      if (playbackAborted) break;
+
+      playheadTime = item.startTime + item.duration;
     }
 
-    let stickY = 0;
-    let dUp = item.dpad === 1;
-    let dDown = item.dpad === -1;
-    if (item.stickDir === 'up-full') stickY = -1.0;
-    else if (item.stickDir === 'up-half') stickY = -0.5;
-    else if (item.stickDir === 'down-full') stickY = 1.0;
-    else if (item.stickDir === 'down-half') stickY = 0.5;
-
-    const mock = { L: false, R: false, A: false, X: false, Y: false, dUp, dDown, stickX: 0, stickY, vibrato: item.hasVibrato };
-    mock[item.button] = true;
-    updateControllerSVG(mock);
-
-    document.getElementById('mon-pitch').innerText = item.pitch;
-    document.getElementById('mon-detune').innerText = `${Math.round(-stickY * 200 + (dUp ? 100 : dDown ? -100 : 0))} cents`;
-    document.getElementById('mon-expr').innerText = item.hasVibrato ? "Vibrato" : "Playing";
-
-    startNote(item.midi, 0, item.hasVibrato);
-    await sleepCancellable(item.duration * 1000);
-    stopNote();
-
-    updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
     if (playbackAborted) break;
+    if (isLooping) {
+      clearPlayheadGlow();
+      await sleepCancellable(380);
+    }
+  } while (isLooping && !playbackAborted);
 
-    playheadTime = item.startTime + item.duration;
-  }
-
+  clearPlayheadGlow();
   stopNote();
   updateControllerSVG({ L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, stickX: 0, stickY: 0, vibrato: false });
   document.getElementById('mon-pitch').innerText = "---";
@@ -1755,30 +2417,34 @@ function renderSheetMusic() {
 
   const count = recordedEvents.length;
   let iconPx = count <= 6 ? 26 : count <= 12 ? 22 : 18;
-  let cardMinW = count <= 6 ? 110 : count <= 12 ? 96 : 80;
+  let cardMinW = count <= 6 ? 110 : count <= 12 ? 96 : 82;
   let badgePx = count <= 6 ? 40 : count <= 12 ? 34 : 30;
   let badgeFont = count <= 6 ? 16 : count <= 12 ? 14 : 13;
   let pitchFont = count <= 6 ? 12 : 10.5;
 
   container.innerHTML = "";
-  recordedEvents.forEach((n) => {
+  recordedEvents.forEach((n, idx) => {
     const card = document.createElement('div');
-    card.className = "note-card";
+    card.className = `note-card ${n.isRest ? 'rest-card' : ''}`;
     card.style.minWidth = `${cardMinW}px`;
     card.style.padding = count <= 6 ? "12px 10px" : "8px 6px";
+    card.onclick = () => auditionCard(idx);
 
-    const bg = BASE_PITCHES[n.button]?.color || "#334155";
+    const bg = n.isRest ? "#334155" : (BASE_PITCHES[n.button]?.color || "#334155");
     const icons = buildModifierIconsHtml(n, iconPx);
     const iconRow = icons.length > 0
       ? `<div class="combo-icon-row" style="min-height:${iconPx}px;">${icons.join('')}</div>`
       : `<div style="min-height:${iconPx}px;"></div>`;
 
+    const badgeSymbol = n.isRest ? "⏸" : n.button;
+
     card.innerHTML = `
-      <div class="badge-icon" style="background:${bg}; width:${badgePx}px; height:${badgePx}px; font-size:${badgeFont}px;">${n.button}</div>
+      <div class="card-delete-btn" title="Remove note" onclick="event.stopPropagation(); deleteCard(${idx});">✕</div>
+      <div class="badge-icon" style="background:${bg}; width:${badgePx}px; height:${badgePx}px; font-size:${badgeFont}px;">${badgeSymbol}</div>
       <div class="card-combo" style="flex-direction:column; gap:3px;">
         ${iconRow}
         <div class="combo-text ${icons.length === 0 ? 'natural-text' : ''}" style="font-size:${count <= 6 ? '10px' : '9px'};">${n.comboPlain}</div>
-        ${showNoteDurations ? `<div class="card-dur-badge">⏱ ${n.duration.toFixed(2)}s</div>` : ''}
+        ${showNoteDurations ? `<div class="card-dur-badge" title="Click to edit hold time" onclick="event.stopPropagation(); editCardDuration(${idx});">⏱ ${n.duration.toFixed(2)}s</div>` : ''}
       </div>
       <div class="card-pitch" style="font-size:${pitchFont}px; color:#cbd5e1; font-weight:700;">${n.pitch}</div>
     `;
@@ -1789,7 +2455,7 @@ function renderSheetMusic() {
 
 /**
  * ==============================================================================
- * MODULE 6: BEAUTIFUL HTML SHEET GENERATOR & EXPORTER
+ * MODULE 8: BEAUTIFUL HTML SHEET GENERATOR & EXPORTER
  * ==============================================================================
  */
 function renderPrintableHTMLSheet() {
@@ -1803,15 +2469,16 @@ function renderPrintableHTMLSheet() {
   else if (count <= 15) { tierClass = 'tier-md'; iconPx = 24; }
 
   const cardsHtml = recordedEvents.map((n, idx) => {
-    const rgb = BASE_PITCHES[n.button]?.hex || [100, 116, 139];
+    const rgb = n.isRest ? [71, 85, 105] : (BASE_PITCHES[n.button]?.hex || [100, 116, 139]);
     const badgeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
     const icons = buildModifierIconsHtml(n, iconPx);
     const isNatural = !n.pdfMod || n.pdfMod === "NATURAL";
+    const badgeSymbol = n.isRest ? "⏸" : n.button;
 
     return `
-      <div class="print-card">
+      <div class="print-card" style="${n.isRest ? 'border-style:dashed;' : ''}">
         <span class="print-card-step">#${idx + 1}</span>
-        <div class="print-badge" style="background:${badgeColor};">${n.button}</div>
+        <div class="print-badge" style="background:${badgeColor};">${badgeSymbol}</div>
         <div class="print-mod-area">
           ${icons.length > 0 ? `<div class="combo-icon-row">${icons.join('')}</div>` : ''}
           <span class="print-mod-pill ${isNatural ? 'natural' : 'active'}">${isNatural ? 'Natural' : n.pdfMod}</span>
@@ -1914,7 +2581,7 @@ async function exportPDF() {
 
 /**
  * ==============================================================================
- * MODULE 7: FULL IMPORT & EXPORT SUBSYSTEM (MIDI, TXT, CLIPBOARD)
+ * MODULE 9: FULL IMPORT & EXPORT SUBSYSTEM (MIDI, TXT, CLIPBOARD)
  * ==============================================================================
  */
 function downloadBlob(blob, filename) {
@@ -1929,6 +2596,10 @@ function downloadBlob(blob, filename) {
 }
 
 function eventToTextToken(ev, idx, allEvents) {
+  if (ev.isRest) {
+    return `REST:${Number((ev.duration || 0.44).toFixed(2))}`;
+  }
+
   let tok = ev.button;
   if (ev.dpad === 1) tok += "+#";
   else if (ev.dpad === -1) tok += "+b";
@@ -2010,6 +2681,7 @@ function generateMidiBlob(events) {
 
   let rawEvents = [];
   events.forEach(n => {
+    if (n.isRest || !n.midi) return;
     rawEvents.push({ time: n.startTime, type: 0x90, midi: n.midi, vel: 90 });
     rawEvents.push({ time: n.startTime + n.duration, type: 0x80, midi: n.midi, vel: 0 });
   });
@@ -2208,6 +2880,7 @@ function importMidiArrayBuffer(buffer) {
     else if (guide.stickDir === 'down-full') { comboTokens.push("Stick ⮟ Full"); pdfTokens.push("STICK DN FULL"); }
 
     parsed.push({
+      isRest: false,
       button: guide.btn,
       dpad: guide.dpad || 0,
       stickDir: guide.stickDir || null,
@@ -2223,10 +2896,12 @@ function importMidiArrayBuffer(buffer) {
   });
 
   if (parsed.length > 0) {
+    pushHistory();
     recordedEvents = parsed;
-    document.getElementById('text-notes-input').value = recordedEvents.map((ev, idx, arr) => eventToTextToken(ev, idx, arr)).join(", ");
+    syncInputsFromEvents();
     renderSheetMusic();
     updateSessionButtons();
+    saveToLocalStorage();
   }
 }
 
