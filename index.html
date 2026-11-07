@@ -791,7 +791,6 @@
           <button class="btn-preset" onclick="setPreset('SongOfStorms')">Song of Storms</button>
           <button class="btn-preset" onclick="setPreset('SongOfTime')">Song of Time</button>
           <button class="btn-preset" onclick="setPreset('Epona')">Epona's Song</button>
-          <button class="btn-preset" onclick="setPreset('WizardsInWinter')">Wizards in Winter</button>
         </div>
       </div>
     </div>
@@ -1608,8 +1607,7 @@ function setPreset(name) {
     'ZeldasLullaby': "R+#:1.0, A:0.5, R+b:1.5, R+#:1.0, A:0.5, R+b:1.5, R+#:1.0, A:0.5, X+^^:1.0, X:0.5, A:1.0, R+^^:0.25, R+#:0.25, R+b:1.0",
     'SongOfStorms':  "L, R, X, L, R, X",
     'SongOfTime':    "A:0.5, L:1.0, R:0.5, A:0.5, L:1.0, R:0.5, A:0.25, Y+#:0.25, Y:0.5, R+^^:0.5, R:0.25, R+^^:0.25, A:0.5, L:0.5, L+vv:0.25, R+b:0.25, L:1.0",
-    'Epona':         "X, Y, A, X, Y, A",
-    'WizardsInWinter': "A:0.22, X:0.22, A+#:0.22, X:0.22, A:0.22, X:0.22, R+^^:0.22, X:0.22, R:0.22, X:0.22, R+b:0.22, X:0.22, L+b:0.22, X:0.22, R+b:0.22, X:0.22"
+    'Epona':         "X, Y, A, X, Y, A"
   };
   if (presets[name]) {
     document.getElementById('text-notes-input').value = presets[name];
