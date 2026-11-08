@@ -5,58 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Ocarina of Time Studio & Tablature Generator</title>
 
-  <!--
-    ============================================================================
-    OCARINA OF TIME STUDIO & TABLATURE GENERATOR — ARCHITECTURAL DOCUMENTATION
-    ============================================================================
-    1. APPLICATION OVERVIEW:
-       A single-file, zero-build Web Audio, Gamepad API, and HTML5 Canvas/PDF
-       studio for performing, translating, sequencing, and exporting music
-       for the Nintendo Switch 2 Ocarina tuning system (B3 to F5 chromatic).
-
-    2. TUNING & ACOUSTIC MODEL (19 SEMITONES: B3 [MIDI 59] TO F5 [MIDI 77]):
-       - 5 Base Buttons:
-         * L = D4 (MIDI 62)
-         * R = F4 (MIDI 65)
-         * A = A4 (MIDI 69)
-         * Y = B4 (MIDI 71)
-         * X = D5 (MIDI 74)
-       - Pitch Modifiers (Additive):
-         * D-Pad Up   (+# or +D^) : +1 semitone  (+100 cents)
-         * D-Pad Down (+b or +Dv) : -1 semitone  (-100 cents)
-         * Stick Up Half   (+^)   : +1 semitone  (+100 cents)
-         * Stick Up Full   (+^^)  : +2 semitones (+200 cents)
-         * Stick Down Half (+v)   : -1 semitone  (-100 cents)
-         * Stick Down Full (+vv)  : -2 semitones (-200 cents)
-         * Stick Horizontal (+~)  : LFO Vibrato  (5.6 Hz, ±32 cents)
-
-    3. NOTATION GRAMMAR:
-       - Raw Pitch Format (Box 1):
-         `PITCH:DURATION[:GAP]` (e.g., `D4:0.5, F#4:0.25, REST:0.5`)
-       - Controller Notation Format (Box 2):
-         `BUTTON[MODIFIERS]:DURATION[:GAP]` (e.g., `L:0.5, R+#:0.25, X+^^+~:1.0`)
-
-    4. MODULE INDEX:
-       - Module 1: Music Theory, Base Pitches & Chromatic Reference Table
-       - Module 2: WebAudio & SoundFont Synthesis Engine (with Dynamic LFO)
-       - Module 3: Real-Time Input Polling (Gamepad, Keyboard, Pointer/Touch)
-       - Module 4: Visual Card Editing, Auditioning, Quantization & Persistence
-       - Module 5: Smart Pitch-to-Controller Translator & Auto-Transposer
-       - Module 6: Forgiving Controller Notation Parser & Song Presets
-       - Module 7: Transport Sequencer, Playhead Renderer & Loop Engine
-       - Module 8: Printable HTML Sheet Music Renderer & PDF/PNG Exporter
-       - Module 9: Binary Standard MIDI (.mid) & Text (.txt) Import/Export
-    ============================================================================
-  -->
-
   <!-- Google Fonts: Cinzel Decorative, Cinzel, and Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- html2canvas for Crisp DOM-to-Image / PDF Rendering -->
+  <!-- html2canvas for High-Performance Element Capture -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- jsPDF for Vector Client-Side PDF Generation -->
+  <!-- jsPDF for Client-Side Multi-Page PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- soundfont-player for Authentic General MIDI Ocarina -->
   <script src="https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
@@ -327,7 +283,7 @@
     .btn-preset.active-speed { background: #2563eb; color: #fff; font-weight: 700; }
     button:disabled, .file-btn-label.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-    /* Compact Speed & Toggle Row */
+    /* Compact Speed & Toggle Bar */
     .compact-control-bar {
       display: flex;
       align-items: center;
@@ -424,7 +380,7 @@
       transform: scale(1.15);
     }
 
-    /* Playhead Active Card Glow (Karaoke rhythm style) */
+    /* Playhead Active Card Glow */
     .note-card.active-playhead {
       border-color: var(--gold-highlight) !important;
       box-shadow: 0 0 16px rgba(250, 204, 21, 0.75), inset 0 0 8px rgba(250, 204, 21, 0.45) !important;
@@ -543,13 +499,8 @@
       border-bottom: 1px solid #1a2233;
       color: #cbd5e1;
     }
-    table.fingering-table tr:last-child td {
-      border-bottom: none;
-    }
-    table.fingering-table tr:hover {
-      background: #182030;
-      cursor: pointer;
-    }
+    table.fingering-table tr:last-child td { border-bottom: none; }
+    table.fingering-table tr:hover { background: #182030; cursor: pointer; }
     .pill {
       display: inline-block;
       padding: 2px 8px;
@@ -596,9 +547,9 @@
       background: #141824;
       border: 1px solid #28334a;
       border-radius: 12px;
-      max-width: 840px;
+      max-width: 900px;
       width: 100%;
-      max-height: 94vh;
+      max-height: 95vh;
       display: flex;
       flex-direction: column;
       box-shadow: 0 25px 60px rgba(0,0,0,0.85);
@@ -640,7 +591,7 @@
       padding: 7px 10px !important;
     }
     .modal-body {
-      padding: 12px;
+      padding: 16px;
       overflow-y: auto;
       overflow-x: auto;
       background: #090c12;
@@ -653,36 +604,53 @@
     .combo-text { font-weight: 700; color: var(--gold-highlight); text-align: center; line-height: 1.2; }
     .combo-text.natural-text { color: #64748b; font-weight: 500; font-style: italic; }
 
-    /* Printable HTML Sheet Music Paper */
-    .printable-sheet {
-      width: 740px;
-      min-height: 520px;
+    /* ==========================================================================
+       OPTIMIZED MULTI-PAGE PRINTABLE SHEET ARCHITECTURE (US LETTER 8.5" x 11")
+       ========================================================================== */
+    .sheet-pages-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Standard US Letter Page (816px x 1056px at 96 DPI) */
+    .sheet-page {
+      width: 816px;
+      min-height: 1056px;
+      height: 1056px;
       background: #ffffff;
       color: #0f172a;
-      border-radius: 8px;
-      padding: 30px;
+      border-radius: 6px;
+      padding: 34px 38px 28px 38px;
       box-shadow: 0 15px 45px rgba(0,0,0,0.75);
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      justify-content: space-between;
       border-top: 8px solid #ca8a04;
-      max-width: 100%;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
     }
-    .sheet-header {
+
+    .sheet-page-header {
       text-align: center;
       border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 12px;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
     }
-    .sheet-header h1 {
+    .sheet-page-header h1 {
       font-family: 'Cinzel Decorative', 'Cinzel', serif;
-      font-size: 23px;
+      font-size: 20px;
       font-weight: 900;
       color: #1e293b;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
+      letter-spacing: 0.8px;
+      margin-bottom: 3px;
     }
-    .sheet-meta {
-      font-size: 12px;
+    .sheet-page-meta {
+      font-size: 11.5px;
       font-weight: 600;
       color: #64748b;
       display: flex;
@@ -690,71 +658,125 @@
       flex-wrap: wrap;
       gap: 12px;
     }
-    .sheet-legend {
+
+    /* Running Header for Page 2+ */
+    .sheet-running-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+    .sheet-running-header span {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    /* High-Contrast Sheet Music Legend */
+    .sheet-page-legend {
       background: #f8fafc;
       border: 1px solid #cbd5e1;
       border-left: 4px solid #3b82f6;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 12px;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 11px;
       color: #334155;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
+      margin-bottom: 10px;
     }
-    .sheet-legend b { color: #0f172a; }
+    .sheet-page-legend b { color: #0f172a; }
 
-    .sheet-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-content: flex-start;
-      gap: 14px;
-      padding: 6px 0;
+    /* Full-Page Card Grid (5 Columns Standard) */
+    .sheet-page-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 11px;
+      align-content: start;
       flex: 1;
     }
+
+    /* Adaptive Grid Tiers for Very Short Melodies */
+    .sheet-page-grid.tier-xl {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .sheet-page-grid.tier-lg {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    /* Readable Music Stand Action Card */
     .print-card {
       background: #ffffff;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
       position: relative;
+      height: 146px;
+      box-sizing: border-box;
+      padding: 6px 4px 0 4px;
+      overflow: hidden;
+    }
+    .print-card.rest-card {
+      background: #f8fafc;
+      border-style: dashed;
+      border-color: #94a3b8;
     }
     .print-card-step {
       position: absolute;
-      top: 6px;
-      left: 8px;
-      font-size: 10.5px;
+      top: 5px;
+      left: 7px;
+      font-size: 10px;
       font-weight: 800;
       color: #94a3b8;
     }
     .print-badge {
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 900;
+      font-size: 18px;
       color: #ffffff;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.22);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+      margin-top: 4px;
     }
     .print-mod-area {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 2px;
       width: 100%;
+      min-height: 42px;
     }
     .print-mod-pill {
-      padding: 2px 8px;
+      padding: 1.5px 6px;
       border-radius: 999px;
       font-weight: 800;
+      font-size: 9px;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      max-width: 95%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
     }
     .print-mod-pill.active {
       background: #fff7ed;
@@ -764,52 +786,52 @@
     .print-mod-pill.natural {
       background: #f1f5f9;
       color: #94a3b8;
+      font-weight: 600;
     }
     .print-dur-badge {
-      font-size: 9.5px;
+      font-size: 9px;
       font-weight: 700;
       color: #0369a1;
       background: #f0f9ff;
       border: 1px solid #bae6fd;
       padding: 1px 5px;
       border-radius: 999px;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
     }
     .print-pitch {
       font-weight: 800;
+      font-size: 13.5px;
       color: #0f172a;
       background: #f8fafc;
       width: 100%;
       text-align: center;
       border-top: 1px solid #e2e8f0;
-      border-radius: 0 0 10px 10px;
-      padding: 5px 0;
+      padding: 4px 0;
+      letter-spacing: 0.3px;
     }
 
-    /* Size Tiers based on Note Count */
-    .tier-xl .print-card { width: 170px; height: 195px; padding-top: 18px; }
-    .tier-xl .print-badge { width: 56px; height: 56px; font-size: 25px; }
-    .tier-xl .print-mod-pill { font-size: 11px; }
-    .tier-xl .print-dur-badge { font-size: 10.5px; padding: 2px 7px; }
+    /* Tier Overrides for Short Melodies */
+    .tier-xl .print-card { height: 185px; padding-top: 10px; }
+    .tier-xl .print-badge { width: 52px; height: 52px; font-size: 24px; }
     .tier-xl .print-pitch { font-size: 17px; padding: 6px 0; }
+    .tier-xl .print-mod-pill { font-size: 11px; }
 
-    .tier-lg .print-card { width: 136px; height: 165px; padding-top: 16px; }
-    .tier-lg .print-badge { width: 44px; height: 44px; font-size: 21px; }
+    .tier-lg .print-card { height: 165px; padding-top: 8px; }
+    .tier-lg .print-badge { width: 44px; height: 44px; font-size: 20px; }
+    .tier-lg .print-pitch { font-size: 15px; padding: 5px 0; }
     .tier-lg .print-mod-pill { font-size: 10px; }
-    .tier-lg .print-dur-badge { font-size: 9.5px; padding: 1px 6px; }
-    .tier-lg .print-pitch { font-size: 15px; }
 
-    .tier-md .print-card { width: 110px; height: 140px; padding-top: 12px; }
-    .tier-md .print-badge { width: 36px; height: 36px; font-size: 17px; }
-    .tier-md .print-mod-pill { font-size: 9px; }
-    .tier-md .print-dur-badge { font-size: 9px; padding: 1px 5px; }
-    .tier-md .print-pitch { font-size: 13px; }
-
-    .tier-sm .print-card { width: 88px; height: 120px; padding-top: 10px; }
-    .tier-sm .print-badge { width: 30px; height: 30px; font-size: 15px; }
-    .tier-sm .print-mod-pill { font-size: 8px; padding: 2px 5px; }
-    .tier-sm .print-dur-badge { font-size: 7.5px; padding: 1px 4px; }
-    .tier-sm .print-pitch { font-size: 11.5px; padding: 3px 0; }
+    /* Page Footer */
+    .sheet-page-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -817,7 +839,7 @@
 <div class="container">
   <header>
     <h1>Ocarina of Time Studio</h1>
-    <p>Switch 2 Tuning &bull; Sampled MIDI Audio &bull; Clean Tablature Generator</p>
+    <p>Switch 2 Tuning &bull; Sampled MIDI Audio &bull; Multi-Page PDF Tablature</p>
   </header>
 
   <!-- Status Bar -->
@@ -1076,13 +1098,14 @@
 </div>
 
 <!-- ==========================================================================
-     FULL-SCREEN PREVIEW & EXPORT MODAL
+     FULL-SCREEN MULTI-PAGE PREVIEW & EXPORT MODAL
      ========================================================================== -->
 <div id="export-modal" class="modal-overlay" onclick="if(event.target === this) closeExportModal()">
   <div class="modal-dialog">
     <div class="modal-header">
       <div class="modal-title">
         <span>📜</span> Tablature Preview
+        <span id="modal-page-info" class="panel-meta-badge" style="margin-left:8px;">1 Page</span>
       </div>
       <div class="modal-actions">
         <!-- In-Modal Timing Toggle -->
@@ -1090,11 +1113,11 @@
           <input type="checkbox" id="toggle-time-modal" checked onchange="handleTimeToggle(this.checked)">
           ⏱ Timing
         </label>
-        <button class="btn-primary" onclick="exportPDF()">
-          📄 PDF
+        <button id="btn-export-pdf" class="btn-primary" onclick="exportPDF()">
+          📄 Export PDF
         </button>
-        <button class="btn-success" onclick="downloadPNG()">
-          🖼 PNG
+        <button id="btn-export-png" class="btn-success" onclick="downloadPNG()">
+          🖼 Download PNG
         </button>
         <button class="btn-secondary" onclick="printSheet()">
           🖨 Print
@@ -1105,8 +1128,8 @@
       </div>
     </div>
     <div class="modal-body">
-      <!-- Crisp HTML Printable Sheet -->
-      <div id="printable-sheet" class="printable-sheet"></div>
+      <!-- Multi-Page Paginated Wrapper -->
+      <div id="sheet-pages-container" class="sheet-pages-wrapper"></div>
     </div>
   </div>
 </div>
@@ -1114,30 +1137,8 @@
 <script>
 /**
  * ==============================================================================
- * DATA SCHEMA REFERENCE (For Developers & AI Models)
- * ==============================================================================
- * @typedef {Object} OcarinaNoteEvent
- * @property {boolean} [isRest]      - True if the event is a silent musical rest
- * @property {string}  button        - Base button key ('L' | 'R' | 'A' | 'Y' | 'X' | 'REST')
- * @property {number}  dpad          - D-Pad semitone offset (-1, 0, or +1)
- * @property {string|null} stickDir  - Stick modifier ('up-full' | 'up-half' | 'down-full' | 'down-half' | null)
- * @property {string}  comboDisplay  - HTML formatted modifier summary for UI cards
- * @property {string}  comboPlain    - Single-line plain text modifier summary for UI cards
- * @property {string}  pdfMod        - Uppercase modifier string for printable sheet pills
- * @property {boolean} hasVibrato    - True if horizontal stick vibrato (~5.6 Hz) is active
- * @property {string}  pitch         - Scientific pitch notation string (e.g., 'D4', 'F#4', 'REST')
- * @property {number|null} midi      - MIDI note integer (59 [B3] to 77 [F5], or null for REST)
- * @property {number}  startTime     - Event start timestamp in seconds from beginning of song
- * @property {number}  duration      - Note hold duration in seconds
- * @property {number}  [gap]         - Silent gap in seconds following this note (default 0.06s)
- */
-
-/**
- * ==============================================================================
  * MODULE 1: MUSIC THEORY & CHROMATIC REFERENCE
  * ==============================================================================
- * Defines the 5 native Ocarina buttons, MIDI-to-pitch conversion helpers,
- * SVG vector icon builders for modifiers, and the 19-note chromatic lookup table.
  */
 const BASE_PITCHES = {
   'L': { midi: 62, note: "D4",  color: "var(--btn-l)", hex: [100, 116, 139] },
@@ -1149,31 +1150,16 @@ const BASE_PITCHES = {
 
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-/**
- * Converts a numeric MIDI pitch (e.g. 69) into scientific pitch notation (e.g. "A4").
- * @param {number} midi
- * @returns {string}
- */
 function midiToName(midi) {
   const rounded = Math.round(midi);
   const oct = Math.floor(rounded / 12) - 1;
   return `${NOTE_NAMES[((rounded % 12) + 12) % 12]}${oct}`;
 }
 
-/**
- * Converts a numeric MIDI pitch into frequency in Hz (A4 = 440 Hz equal temperament).
- * @param {number} midi
- * @returns {number}
- */
 function midiToFreq(midi) {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
-/**
- * Canonical 19-semitone chromatic mapping for the Switch 2 Ocarina (B3 to F5).
- * Used both to populate the UI reference table and to reverse-lookup optimal
- * controller fingerings when translating raw pitches or importing MIDI files.
- */
 const CHROMATIC_GUIDE = [
   { pitch: "B3",        midi: 59, btn: "L", notation: "L+b+vv", mod: "Stick Down (Full) + D-Pad Down", alt: "---",                          altNotation: "---",    sY: 1.0,  dpad: -1, stickDir: "down-full" },
   { pitch: "C4",        midi: 60, btn: "L", notation: "L+vv",   mod: "Stick Down (Full)",              alt: "---",                          altNotation: "---",    sY: 1.0,  dpad: 0,  stickDir: "down-full" },
@@ -1196,28 +1182,21 @@ const CHROMATIC_GUIDE = [
   { pitch: "F5",        midi: 77, btn: "X", notation: "X+#+^^", mod: "Stick Up (Full) + D-Pad Up",     alt: "---",                          altNotation: "---",    sY: -1.0, dpad: 1,  stickDir: "up-full" }
 ];
 
-/**
- * Generates an inline SVG icon representing D-Pad Up (+1) or D-Pad Down (-1).
- */
 function getDpadSvg(direction = 'up', size = 20) {
   const isUp = direction === 'up';
-  const isDown = direction === 'down';
   const upColor = isUp ? '#facc15' : '#334155';
-  const downColor = isDown ? '#facc15' : '#334155';
+  const downColor = !isUp ? '#facc15' : '#334155';
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="vertical-align:middle; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.35)); pointer-events:none;">
     <rect x="8" y="1" width="8" height="22" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.2"/>
     <rect x="1" y="8" width="22" height="8" rx="2" fill="#1e293b" stroke="#475569" stroke-width="1.2"/>
     <rect x="8.5" y="1.5" width="7" height="7" rx="1.2" fill="${upColor}"/>
     ${isUp ? '<polygon points="12,2.8 9.5,6.5 14.5,6.5" fill="#713f12"/>' : ''}
     <rect x="8.5" y="15.5" width="7" height="7" rx="1.2" fill="${downColor}"/>
-    ${isDown ? '<polygon points="12,21.2 9.5,17.5 14.5,17.5" fill="#713f12"/>' : ''}
+    ${!isUp ? '<polygon points="12,21.2 9.5,17.5 14.5,17.5" fill="#713f12"/>' : ''}
     <circle cx="12" cy="12" r="1.5" fill="#64748b"/>
   </svg>`;
 }
 
-/**
- * Generates an inline SVG icon representing Left Analog Stick tilt or Vibrato.
- */
 function getStickSvg(direction = 'up', intensity = 'full', size = 20) {
   let nubY = 12;
   let nubColor = "#06b6d4";
@@ -1243,27 +1222,17 @@ function getStickSvg(direction = 'up', intensity = 'full', size = 20) {
   </svg>`;
 }
 
-/**
- * Appends a single note from the bottom Chromatic Fingering table directly
- * into the current sequence and updates both input boxes.
- */
 function appendNoteFromTable(notation, pitch) {
   const cInput = document.getElementById('text-notes-input');
   const rInput = document.getElementById('raw-notes-input');
-
   const cVal = cInput.value.trim();
   const rVal = rInput.value.trim();
-
   cInput.value = cVal ? `${cVal}, ${notation}:0.38` : `${notation}:0.38`;
   rInput.value = rVal ? `${rVal}, ${pitch}:0.38` : `${pitch}:0.38`;
-
   loadFromTextInput(false);
   saveToLocalStorage();
 }
 
-/**
- * Builds the 19-row interactive Chromatic Fingering table on startup.
- */
 function populateFingeringTable() {
   const tbody = document.getElementById('fingering-table-body');
   tbody.innerHTML = "";
@@ -1309,13 +1278,10 @@ function populateFingeringTable() {
 }
 window.addEventListener('DOMContentLoaded', populateFingeringTable);
 
-
 /**
  * ==============================================================================
- * MODULE 2: AUDIO ENGINE (SoundFont Sampled Ocarina + Dual-Oscillator Fallback)
+ * MODULE 2: AUDIO ENGINE (SoundFont Sampled Ocarina + Dual Synth Fallback)
  * ==============================================================================
- * Manages WebAudio context lifecycle, FluidR3_GM Ocarina soundfont playback,
- * real-time detune pitch-bending, and dynamic LFO vibrato injection.
  */
 const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
@@ -1323,7 +1289,6 @@ let soundfontInstrument = null;
 let activeSoundfontNode = null;
 let vibratoLfo = null;
 let vibratoGain = null;
-
 let fallbackOsc = null;
 let fallbackSubOsc = null;
 let fallbackGain = null;
@@ -1350,17 +1315,11 @@ function loadSoundfont() {
 window.addEventListener('load', loadSoundfont);
 window.addEventListener('pointerdown', () => { if (!audioCtx) initAudio(); }, { once: true });
 
-/**
- * Dynamically enables or disables LFO vibrato (5.6 Hz, ±32 cents) on the
- * currently sounding note so moving the stick mid-note works seamlessly.
- * @param {boolean} enable
- */
 function setNoteVibrato(enable) {
   if (!audioCtx) return;
   const now = audioCtx.currentTime;
-
   if (enable) {
-    if (vibratoLfo) return; // Already vibrating
+    if (vibratoLfo) return;
     const hasSfDetune = activeSoundfontNode && activeSoundfontNode.source && activeSoundfontNode.source.detune;
     const hasFallback = fallbackOsc && fallbackSubOsc;
     if (!hasSfDetune && !hasFallback) return;
@@ -1371,9 +1330,7 @@ function setNoteVibrato(enable) {
     vibratoGain.gain.setValueAtTime(32, now);
     vibratoLfo.connect(vibratoGain);
 
-    if (hasSfDetune) {
-      vibratoGain.connect(activeSoundfontNode.source.detune);
-    }
+    if (hasSfDetune) vibratoGain.connect(activeSoundfontNode.source.detune);
     if (hasFallback) {
       vibratoGain.connect(fallbackOsc.detune);
       vibratoGain.connect(fallbackSubOsc.detune);
@@ -1389,21 +1346,13 @@ function setNoteVibrato(enable) {
   }
 }
 
-/**
- * Starts playing an Ocarina note at `midiNumber` with optional initial detune and vibrato.
- * @param {number} midiNumber
- * @param {number} [initialDetuneCents=0]
- * @param {boolean} [hasVibrato=false]
- */
 function startNote(midiNumber, initialDetuneCents = 0, hasVibrato = false) {
   initAudio();
   stopNote();
-
   const now = audioCtx.currentTime;
 
   if (soundfontInstrument) {
     activeSoundfontNode = soundfontInstrument.play(midiNumber, now, { gain: 1.4, loop: true });
-
     if (activeSoundfontNode && activeSoundfontNode.source && activeSoundfontNode.source.detune) {
       activeSoundfontNode.source.detune.setValueAtTime(initialDetuneCents, now);
     }
@@ -1436,16 +1385,9 @@ function startNote(midiNumber, initialDetuneCents = 0, hasVibrato = false) {
     fallbackSubOsc.start(now);
   }
 
-  if (hasVibrato) {
-    setNoteVibrato(true);
-  }
+  if (hasVibrato) setNoteVibrato(true);
 }
 
-/**
- * Updates continuous pitch bend (in cents) and vibrato state while a note is held.
- * @param {number} detuneCents
- * @param {boolean} [hasVibrato=false]
- */
 function updateContinuousPitchBend(detuneCents, hasVibrato = false) {
   if (!audioCtx) return;
   const now = audioCtx.currentTime;
@@ -1459,9 +1401,6 @@ function updateContinuousPitchBend(detuneCents, hasVibrato = false) {
   setNoteVibrato(hasVibrato);
 }
 
-/**
- * Immediately stops any active Ocarina note and cleans up audio nodes.
- */
 function stopNote() {
   setNoteVibrato(false);
   if (activeSoundfontNode) {
@@ -1475,22 +1414,17 @@ function stopNote() {
     fallbackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
     const o1 = fallbackOsc;
     const o2 = fallbackSubOsc;
-    setTimeout(() => {
-      try { o1 && o1.stop(); o2 && o2.stop(); } catch(e) {}
-    }, 60);
+    setTimeout(() => { try { o1 && o1.stop(); o2 && o2.stop(); } catch(e) {} }, 60);
     fallbackOsc = null;
     fallbackSubOsc = null;
     fallbackGain = null;
   }
 }
 
-
 /**
  * ==============================================================================
- * MODULE 3: INPUT SUBSYSTEM, UNDO/REDO HISTORY & ANALOG JOYSTICK
+ * MODULE 3: INPUT SUBSYSTEM, UNDO/REDO & JOYSTICK
  * ==============================================================================
- * Polls Gamepad API, Keyboard events, and SVG Pointer/Touch gestures at 60fps.
- * Also manages the 40-step Undo/Redo state stack.
  */
 let isRecording = false;
 let isPlaying = false;
@@ -1498,9 +1432,7 @@ let isLooping = false;
 let playbackAborted = false;
 let activePlaybackTimeout = null;
 let recordStartTime = 0;
-/** @type {OcarinaNoteEvent[]} */
 let recordedEvents = [];
-/** @type {OcarinaNoteEvent|null} */
 let activeRecordedNote = null;
 let showNoteDurations = true;
 let playbackSpeed = 1.0;
@@ -1511,14 +1443,10 @@ let redoStack = [];
 let keyboardState = { L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, vibrato: false };
 let touchActiveButtons = new Set();
 let mouseLatchedDpad = 0;
-
 let stickState = { x: 0, y: 0 };
 let isDraggingStick = false;
 let currentNoteState = null;
 
-/**
- * Saves a deep snapshot of `recordedEvents` onto the undo history stack.
- */
 function pushHistory() {
   undoStack.push(JSON.stringify(recordedEvents));
   if (undoStack.length > 40) undoStack.shift();
@@ -1530,8 +1458,7 @@ function undo() {
   if (undoStack.length === 0) return;
   if (isPlaying) stopPlayback();
   redoStack.push(JSON.stringify(recordedEvents));
-  const state = undoStack.pop();
-  recordedEvents = JSON.parse(state);
+  recordedEvents = JSON.parse(undoStack.pop());
   recalcStartTimes();
   syncInputsFromEvents();
   renderSheetMusic();
@@ -1544,8 +1471,7 @@ function redo() {
   if (redoStack.length === 0) return;
   if (isPlaying) stopPlayback();
   undoStack.push(JSON.stringify(recordedEvents));
-  const state = redoStack.pop();
-  recordedEvents = JSON.parse(state);
+  recordedEvents = JSON.parse(redoStack.pop());
   recalcStartTimes();
   syncInputsFromEvents();
   renderSheetMusic();
@@ -1561,10 +1487,6 @@ function updateUndoRedoButtons() {
   if (btnRedo) btnRedo.disabled = redoStack.length === 0 || isPlaying || isRecording;
 }
 
-/**
- * Releases any held keyboard/touch states if the browser tab loses focus
- * so a note never gets stuck droning in the background.
- */
 function releaseAllHeldInputs() {
   keyboardState = { L: false, R: false, A: false, X: false, Y: false, dUp: false, dDown: false, vibrato: false };
   touchActiveButtons.clear();
@@ -1578,14 +1500,11 @@ function releaseAllHeldInputs() {
   }
 }
 window.addEventListener('blur', releaseAllHeldInputs);
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) releaseAllHeldInputs();
-});
+document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAllHeldInputs(); });
 
 window.addEventListener('keydown', (e) => {
   const isTextInput = e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT';
 
-  // Ctrl+Enter / Cmd+Enter inside Textareas -> Translate or Load immediately
   if (isTextInput && (e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
     if (e.target.id === 'raw-notes-input') translateRawNotesToController();
@@ -1593,7 +1512,6 @@ window.addEventListener('keydown', (e) => {
     return;
   }
 
-  // Escape -> Close Export Modal or Stop Playback
   if (e.key === 'Escape') {
     const modal = document.getElementById('export-modal');
     if (modal && modal.style.display === 'flex') {
@@ -1606,11 +1524,9 @@ window.addEventListener('keydown', (e) => {
     }
   }
 
-  // Global Undo / Redo shortcuts (when not typing inside a textarea)
   if (!isTextInput && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
     e.preventDefault();
-    if (e.shiftKey) redo();
-    else undo();
+    if (e.shiftKey) redo(); else undo();
     return;
   }
   if (!isTextInput && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
@@ -1619,7 +1535,6 @@ window.addEventListener('keydown', (e) => {
     return;
   }
 
-  // Spacebar -> Toggle Play / Stop (when not focused on a textarea or button)
   if (!isTextInput && e.target.tagName !== 'BUTTON' && e.code === 'Space') {
     e.preventDefault();
     if (isPlaying) stopPlayback();
@@ -1708,11 +1623,9 @@ function setupAnalogStickDrag() {
     const dx = svgP.x - 110;
     const dy = svgP.y - 78;
     const maxRadius = 16;
-
     const distance = Math.hypot(dx, dy);
     const clampedDistance = Math.min(distance, maxRadius);
     const angle = Math.atan2(dy, dx);
-
     stickState.x = (clampedDistance / maxRadius) * Math.cos(angle);
     stickState.y = (clampedDistance / maxRadius) * Math.sin(angle);
   }
@@ -1728,16 +1641,8 @@ function setupTouchAndMouseControls() {
   const registerFaceBtn = (id, key) => {
     const el = document.getElementById(id);
     if (!el) return;
-    
-    const press = (e) => {
-      e.preventDefault();
-      touchActiveButtons.add(key);
-    };
-    const release = (e) => {
-      e.preventDefault();
-      touchActiveButtons.delete(key);
-    };
-
+    const press = (e) => { e.preventDefault(); touchActiveButtons.add(key); };
+    const release = (e) => { e.preventDefault(); touchActiveButtons.delete(key); };
     el.addEventListener('pointerdown', press);
     el.addEventListener('pointerup', release);
     el.addEventListener('pointercancel', release);
@@ -1798,10 +1703,6 @@ function handleTimeToggle(isChecked) {
   }
 }
 
-/**
- * 60fps main input loop. Reads physical Gamepad state, merges with Keyboard
- * and SVG touch state, triggers live synthesis, and records events when armed.
- */
 function pollInput() {
   if (isPlaying) {
     requestAnimationFrame(pollInput);
@@ -1911,7 +1812,6 @@ function pollInput() {
     } else {
       updateContinuousPitchBend(totalDetuneCents, raw.vibrato);
 
-      // If recording, capture mid-note vibrato or modifier adjustments
       if (isRecording && activeRecordedNote) {
         if (raw.vibrato && !activeRecordedNote.hasVibrato) {
           activeRecordedNote.hasVibrato = true;
@@ -1919,7 +1819,6 @@ function pollInput() {
           activeRecordedNote.comboPlain = comboPlain;
           activeRecordedNote.pdfMod = pdfModifier;
         }
-        // Allow modifier latches within the first 120ms of pressing a note button
         const heldSec = ((performance.now() - recordStartTime) / 1000) - activeRecordedNote.startTime;
         if (heldSec < 0.12 && (dpadSemis !== activeRecordedNote.dpad || stickDir !== activeRecordedNote.stickDir)) {
           activeRecordedNote.dpad = dpadSemis;
@@ -1957,16 +1856,12 @@ function pollInput() {
   requestAnimationFrame(pollInput);
 }
 
-/**
- * Finalizes an in-progress live-recorded note and pushes it to `recordedEvents`.
- */
 function commitActiveNote() {
   if (activeRecordedNote) {
     pushHistory();
     const nowSec = (performance.now() - recordStartTime) / 1000;
     activeRecordedNote.duration = Math.max(0.12, nowSec - activeRecordedNote.startTime);
 
-    // Preserve natural pause gap from previous recorded note
     if (recordedEvents.length > 0) {
       const prev = recordedEvents[recordedEvents.length - 1];
       prev.gap = Math.max(0, activeRecordedNote.startTime - (prev.startTime + prev.duration));
@@ -2021,13 +1916,6 @@ function toggleSVGClass(id, className, condition) {
  * ==============================================================================
  * MODULE 4: CARD EDITING, DELETION, AUDITION, QUANTIZE & LOCALSTORAGE
  * ==============================================================================
- * Handles individual card interactions (click to audition, edit hold duration,
- * delete step), musical grid quantization, and localStorage auto-persistence.
- */
-
-/**
- * Recalculates sequential `startTime` values across `recordedEvents` while
- * preserving each note's custom post-note `gap` (defaulting to 0.06s).
  */
 function recalcStartTimes() {
   let cur = 0;
@@ -2131,10 +2019,6 @@ function quantizeTimings() {
   }
 }
 
-/**
- * Synchronizes both Box 1 (Raw Pitch) and Box 2 (Controller Notation) textareas
- * from the current `recordedEvents` array.
- */
 function syncInputsFromEvents() {
   const textNotesInput = document.getElementById('text-notes-input');
   if (textNotesInput) {
@@ -2172,23 +2056,11 @@ window.addEventListener('load', loadFromLocalStorage);
  * ==============================================================================
  * MODULE 5: TRANSLATOR, FORGIVING PARSER & AI PROMPT COPY
  * ==============================================================================
- * Converts standard musical pitch sequences (e.g., "D4:0.5, F#4:0.25") into
- * Switch 2 Ocarina button/modifier notation, automatically transposing songs
- * into the playable 19-semitone window (B3–F5, MIDI 59–77) when needed.
  */
 const PITCH_SEMITONES = {
-  'C': 0, 'B#': 0,
-  'C#': 1, 'Db': 1,
-  'D': 2,
-  'D#': 3, 'Eb': 3,
-  'E': 4, 'Fb': 4,
-  'F': 5, 'E#': 5,
-  'F#': 6, 'Gb': 6,
-  'G': 7,
-  'G#': 8, 'Ab': 8,
-  'A': 9,
-  'A#': 10, 'Bb': 10,
-  'B': 11, 'Cb': 11
+  'C': 0, 'B#': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
+  'E': 4, 'Fb': 4, 'F': 5, 'E#': 5, 'F#': 6, 'Gb': 6, 'G': 7,
+  'G#': 8, 'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11, 'Cb': 11
 };
 
 async function copyAiPrompt() {
@@ -2249,7 +2121,6 @@ function translateRawNotesToController() {
       continue;
     }
 
-    // Handles sharps, flats (b/B), and octaves accurately
     const m = pitchStr.match(/^([a-gA-G])([#bB]?)(-?\d+)?$/);
     if (!m) continue;
 
@@ -2257,7 +2128,6 @@ function translateRawNotesToController() {
     let acc = m[2] ? m[2].toLowerCase() : '';
     let noteKey = letter + acc;
     const octave = m[3] !== undefined ? parseInt(m[3], 10) : 4;
-
     const semi = PITCH_SEMITONES[noteKey];
     if (semi === undefined) continue;
 
@@ -2271,12 +2141,12 @@ function translateRawNotesToController() {
     return;
   }
 
-  // SMART AUTO-TRANSPOSE: Ocarina range is B3 (59) to F5 (77)
+  // SMART AUTO-TRANSPOSE (B3 to F5: MIDI 59 to 77)
   let minMidi = Math.min(...pitchNotes.map(n => n.midi));
   let maxMidi = Math.max(...pitchNotes.map(n => n.midi));
   let transposeShift = 0;
-
   const span = maxMidi - minMidi;
+
   if (span <= 18) {
     while (minMidi + transposeShift < 59) transposeShift += 12;
     while (maxMidi + transposeShift > 77) transposeShift -= 12;
@@ -2284,14 +2154,11 @@ function translateRawNotesToController() {
     while (maxMidi + transposeShift > 77) transposeShift -= 1;
   } else {
     const midPoint = (minMidi + maxMidi) / 2;
-    const ocarinaCenter = 68;
-    transposeShift = Math.round(ocarinaCenter - midPoint);
+    transposeShift = Math.round(68 - midPoint);
   }
 
   if (transposeShift !== 0) {
-    parsedNotes.forEach(n => {
-      if (!n.isRest) n.midi += transposeShift;
-    });
+    parsedNotes.forEach(n => { if (!n.isRest) n.midi += transposeShift; });
     alertEl.style.display = 'block';
     alertEl.className = "status-alert info";
     alertEl.innerText = `🎵 Smart Auto-Transpose: Melody shifted by ${transposeShift > 0 ? '+' : ''}${transposeShift} semitone(s) to match the Switch 2 Ocarina range (B3–F5).`;
@@ -2314,8 +2181,7 @@ function translateRawNotesToController() {
     controllerTokens.push(tok);
   });
 
-  const finalControllerString = controllerTokens.join(", ");
-  document.getElementById('text-notes-input').value = finalControllerString;
+  document.getElementById('text-notes-input').value = controllerTokens.join(", ");
   loadFromTextInput(false);
   saveToLocalStorage();
 }
@@ -2324,11 +2190,6 @@ function translateRawNotesToController() {
  * ==============================================================================
  * MODULE 6: CONTROLLER TEXT SONG PARSER & EXPANDED PRESETS
  * ==============================================================================
- * Parses controller notation strings into `OcarinaNoteEvent` objects and
- * provides built-in Zelda melody presets.
- *
- * @param {boolean} [syncRawBox=true] - Whether to update Box 1 (`raw-notes-input`)
- *                                      with the resulting pitches.
  */
 function loadFromTextInput(syncRawBox = true) {
   if (isPlaying) stopPlayback();
@@ -2396,8 +2257,6 @@ function loadFromTextInput(syncRawBox = true) {
     const match = tok.match(/([LRAYX])/);
     if (!match) return;
     const btn = match[1];
-
-    // Remove the base button letter so only modifiers remain in `modStr`
     let modStr = tok.replace(btn, '');
 
     let hasVib = false;
@@ -2412,8 +2271,6 @@ function loadFromTextInput(syncRawBox = true) {
     let comboTokens = [];
     let pdfTokens = [];
 
-    // 1. Parse D-Pad modifiers first and strip them from `modStr` to prevent
-    //    `+D^` or `+DV` from colliding with stick `^`, `V`, or `D` tokens.
     if (modStr.includes('+D^') || modStr.includes('#') || modStr.includes('+▲') || modStr.includes('▲')) {
       offset += 1; dpad = 1;
       comboTokens.push("D-Pad ▲"); pdfTokens.push("D-PAD UP");
@@ -2424,7 +2281,6 @@ function loadFromTextInput(syncRawBox = true) {
       modStr = modStr.replace(/\+DV/g, '').replace(/\+B/g, '').replace(/B/g, '').replace(/\+▼/g, '').replace(/▼/g, '');
     }
 
-    // 2. Parse Analog Stick vertical modifiers from remaining `modStr`
     if (modStr.includes('^^') || modStr.includes('UU')) {
       offset += 2; stickDir = 'up-full';
       comboTokens.push("Stick ⮝ Full"); pdfTokens.push("STICK UP FULL");
@@ -2525,10 +2381,8 @@ function setPreset(name) {
 
 /**
  * ==============================================================================
- * MODULE 7: SEQUENCER RECORDING & PLAYBACK WITH PLAYHEAD & LOOP
+ * MODULE 7: SEQUENCER RECORDING & PLAYBACK
  * ==============================================================================
- * Controls transport state (Record, Play, Stop, Loop), animates the active
- * karaoke playhead card, and renders the visual card sequence.
  */
 function sleepCancellable(ms) {
   return new Promise((resolve) => {
@@ -2704,10 +2558,6 @@ function buildModifierIconsHtml(n, iconPx) {
   return icons;
 }
 
-/**
- * Renders the visual controller action cards inside `#sheet-music` and updates
- * the `#sheet-summary-badge` note count and duration indicator.
- */
 function renderSheetMusic() {
   const container = document.getElementById('sheet-music');
   const summaryBadge = document.getElementById('sheet-summary-badge');
@@ -2764,63 +2614,128 @@ function renderSheetMusic() {
 
 /**
  * ==============================================================================
- * MODULE 8: BEAUTIFUL HTML SHEET GENERATOR & EXPORTER (PDF / PNG / PRINT)
+ * MODULE 8: HIGH-PERFORMANCE MULTI-PAGE EXPORTER (LIGHTWEIGHT PDF, PNG, PRINT)
  * ==============================================================================
- * Renders a high-contrast printable sheet inside `#export-modal` and exports
- * via `html2canvas` + `jsPDF`.
  */
 function renderPrintableHTMLSheet() {
-  const sheet = document.getElementById('printable-sheet');
+  const container = document.getElementById('sheet-pages-container');
+  if (!container) return;
+
   const count = recordedEvents.length;
+  if (count === 0) {
+    container.innerHTML = `<div style="color:#94a3b8; padding:40px; text-align:center;">No notes to export.</div>`;
+    return;
+  }
 
-  let tierClass = 'tier-sm';
+  const lastEv = recordedEvents[count - 1];
+  const totalTime = (lastEv.startTime + lastEv.duration).toFixed(1);
+
+  // Pagination Architecture:
+  // Page 1: 20 notes (accommodates title, header & full legend)
+  // Page 2+: 25 notes per page (5 rows of 5)
+  let pagesData = [];
+  if (count <= 20) {
+    pagesData.push(recordedEvents.slice(0));
+  } else {
+    pagesData.push(recordedEvents.slice(0, 20));
+    let offset = 20;
+    while (offset < count) {
+      pagesData.push(recordedEvents.slice(offset, offset + 25));
+      offset += 25;
+    }
+  }
+
+  const totalPages = pagesData.length;
+  const pageBadge = document.getElementById('modal-page-info');
+  if (pageBadge) {
+    pageBadge.innerText = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'} • ${count} Notes`;
+  }
+
+  let tierClass = '';
   let iconPx = 20;
-  if (count <= 4) { tierClass = 'tier-xl'; iconPx = 34; }
-  else if (count <= 8) { tierClass = 'tier-lg'; iconPx = 28; }
-  else if (count <= 15) { tierClass = 'tier-md'; iconPx = 24; }
+  if (count <= 6) { tierClass = 'tier-xl'; iconPx = 30; }
+  else if (count <= 12) { tierClass = 'tier-lg'; iconPx = 24; }
 
-  const cardsHtml = recordedEvents.map((n, idx) => {
-    const rgb = n.isRest ? [71, 85, 105] : (BASE_PITCHES[n.button]?.hex || [100, 116, 139]);
-    const badgeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-    const icons = buildModifierIconsHtml(n, iconPx);
-    const isNatural = !n.pdfMod || n.pdfMod === "NATURAL";
-    const badgeSymbol = n.isRest ? "⏸" : n.button;
+  container.innerHTML = "";
 
-    return `
-      <div class="print-card" style="${n.isRest ? 'border-style:dashed;' : ''}">
-        <span class="print-card-step">#${idx + 1}</span>
-        <div class="print-badge" style="background:${badgeColor};">${badgeSymbol}</div>
-        <div class="print-mod-area">
-          ${icons.length > 0 ? `<div class="combo-icon-row">${icons.join('')}</div>` : ''}
-          <span class="print-mod-pill ${isNatural ? 'natural' : 'active'}">${isNatural ? 'Natural' : n.pdfMod}</span>
-          ${showNoteDurations ? `<span class="print-dur-badge">⏱ ${n.duration.toFixed(2)}s</span>` : ''}
+  pagesData.forEach((pageNotes, pageIdx) => {
+    const pageNum = pageIdx + 1;
+    const isFirstPage = pageNum === 1;
+    const globalOffset = isFirstPage ? 0 : 20 + (pageIdx - 1) * 25;
+
+    const cardsHtml = pageNotes.map((n, idxOnPage) => {
+      const globalIdx = globalOffset + idxOnPage;
+      const rgb = n.isRest ? [71, 85, 105] : (BASE_PITCHES[n.button]?.hex || [100, 116, 139]);
+      const badgeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      const icons = buildModifierIconsHtml(n, iconPx);
+      const isNatural = !n.pdfMod || n.pdfMod === "NATURAL";
+      const badgeSymbol = n.isRest ? "⏸" : n.button;
+
+      return `
+        <div class="print-card ${n.isRest ? 'rest-card' : ''}">
+          <span class="print-card-step">#${globalIdx + 1}</span>
+          <div class="print-badge" style="background:${badgeColor};">${badgeSymbol}</div>
+          <div class="print-mod-area">
+            ${icons.length > 0 ? `<div class="combo-icon-row">${icons.join('')}</div>` : ''}
+            <span class="print-mod-pill ${isNatural ? 'natural' : 'active'}">${isNatural ? 'Natural' : n.pdfMod}</span>
+            ${showNoteDurations ? `<span class="print-dur-badge">⏱ ${n.duration.toFixed(2)}s</span>` : ''}
+          </div>
+          <div class="print-pitch">${n.pitch}</div>
         </div>
-        <div class="print-pitch">${n.pitch}</div>
+      `;
+    }).join('');
+
+    const pageEl = document.createElement('div');
+    pageEl.className = 'sheet-page';
+
+    let headerHtml = "";
+    if (isFirstPage) {
+      headerHtml = `
+        <div>
+          <div class="sheet-page-header">
+            <h1>Ocarina of Time — Action Tablature</h1>
+            <div class="sheet-page-meta">
+              <span>🎵 Notes: ${count}</span>
+              ${showNoteDurations ? `<span>•</span><span>⏱ ~${totalTime}s</span>` : ''}
+              <span>•</span>
+              <span>🎮 Switch 2 Standard Tuning</span>
+              <span>•</span>
+              <span>📄 Page 1 of ${totalPages}</span>
+            </div>
+          </div>
+          <div class="sheet-page-legend">
+            <div><b>1. Base Buttons:</b> [L] Low D4 &bull; [R] F4 &bull; [A] A4 &bull; [Y] B4 &bull; [X] High D5</div>
+            <div><b>2. Modifiers:</b> D-Pad Up/Down (±1 semitone) &bull; Analog Stick Up/Down (Half ±1, Full ±2, Horiz = Vibrato)</div>
+            ${showNoteDurations ? `<div><b>3. Timing:</b> Blue badge indicates hold duration in seconds.</div>` : ''}
+          </div>
+        </div>
+      `;
+    } else {
+      headerHtml = `
+        <div class="sheet-running-header">
+          <span>Ocarina of Time — Action Tablature (Cont.)</span>
+          <span>Page ${pageNum} of ${totalPages} &bull; Notes #${globalOffset + 1}–#${globalOffset + pageNotes.length}</span>
+        </div>
+      `;
+    }
+
+    const footerHtml = `
+      <div class="sheet-page-footer">
+        <span>Ocarina of Time Studio &bull; Switch 2 Tuning</span>
+        <span>Page ${pageNum} of ${totalPages}</span>
       </div>
     `;
-  }).join('');
 
-  const totalTime = count > 0 ? (recordedEvents[count - 1].startTime + recordedEvents[count - 1].duration).toFixed(1) : 0;
-
-  sheet.innerHTML = `
-    <div class="sheet-header">
-      <h1>Ocarina Action Tablature</h1>
-      <div class="sheet-meta">
-        <span>🎵 Notes: ${count}</span>
-        ${showNoteDurations ? `<span>•</span><span>⏱ ~${totalTime}s</span>` : ''}
-        <span>•</span>
-        <span>🎮 Switch 2 Standard</span>
+    pageEl.innerHTML = `
+      ${headerHtml}
+      <div class="sheet-page-grid ${tierClass}">
+        ${cardsHtml}
       </div>
-    </div>
-    <div class="sheet-legend">
-      <div><b>1. Primary Buttons:</b> [L] Low D, [R] F, [A] A, [Y] B, [X] High D</div>
-      <div><b>2. Modifiers:</b> D-Pad (±1), Stick Up/Down (Half ±1, Full ±2, Horiz = Vib)</div>
-      ${showNoteDurations ? `<div><b>3. Duration:</b> Blue badge indicates hold time in seconds.</div>` : ''}
-    </div>
-    <div class="sheet-grid ${tierClass}">
-      ${cardsHtml}
-    </div>
-  `;
+      ${footerHtml}
+    `;
+
+    container.appendChild(pageEl);
+  });
 }
 
 function openExportModal() {
@@ -2835,71 +2750,163 @@ function closeExportModal() {
   document.getElementById('export-modal').style.display = 'none';
 }
 
-async function captureSheetCanvas() {
-  const sheetEl = document.getElementById('printable-sheet');
-  return await html2canvas(sheetEl, {
-    scale: 2.5,
-    backgroundColor: "#ffffff",
-    useCORS: true
-  });
+/**
+ * High-Speed, Lightweight Multi-Page PDF Exporter:
+ * Generates compact ~1MB PDFs without UI lag.
+ */
+async function exportPDF() {
+  if (recordedEvents.length === 0) return;
+  const pageEls = document.querySelectorAll('.sheet-page');
+  if (!pageEls || pageEls.length === 0) return;
+
+  const btn = document.getElementById('btn-export-pdf');
+  const origText = btn ? btn.innerHTML : "📄 Export PDF";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `⏳ Exporting...`;
+  }
+
+  try {
+    const { jsPDF } = window.jspdf;
+    // Standard US Letter (612pt x 792pt)
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "letter",
+      compress: true
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    for (let i = 0; i < pageEls.length; i++) {
+      if (btn) btn.innerHTML = `⏳ Page ${i + 1}/${pageEls.length}...`;
+      await new Promise(r => setTimeout(r, 20));
+
+      // Capture single page with balanced scale (1.8x gives ~170 DPI, crisp text & tiny memory footprint)
+      const canvas = await html2canvas(pageEls[i], {
+        scale: 1.8,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false
+      });
+
+      // High quality JPEG (0.90) compresses each page to ~180KB instead of 50MB raw PNG
+      const imgData = canvas.toDataURL("image/jpeg", 0.90);
+
+      if (i > 0) pdf.addPage("letter", "portrait");
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+    }
+
+    if (btn) btn.innerHTML = `⏳ Saving PDF...`;
+    await new Promise(r => setTimeout(r, 20));
+    pdf.save("ocarina_action_sheet.pdf");
+  } catch (err) {
+    console.error("PDF Export error:", err);
+    alert("PDF generation encountered an error: " + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origText;
+    }
+  }
 }
 
 async function downloadPNG() {
-  const canvas = await captureSheetCanvas();
-  const a = document.createElement('a');
-  a.download = "ocarina_action_sheet.png";
-  a.href = canvas.toDataURL("image/png");
-  a.click();
+  const pageEls = document.querySelectorAll('.sheet-page');
+  if (!pageEls || pageEls.length === 0) return;
+
+  const btn = document.getElementById('btn-export-png');
+  const origText = btn ? btn.innerHTML : "🖼 Download PNG";
+  if (btn) { btn.disabled = true; btn.innerHTML = "⏳ Generating..."; }
+
+  try {
+    for (let i = 0; i < pageEls.length; i++) {
+      const canvas = await html2canvas(pageEls[i], {
+        scale: 2.0,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false
+      });
+      const suffix = pageEls.length > 1 ? `_page_${i + 1}` : "";
+      const a = document.createElement('a');
+      a.download = `ocarina_action_sheet${suffix}.png`;
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+      if (pageEls.length > 1) await new Promise(r => setTimeout(r, 300));
+    }
+  } catch (err) {
+    alert("PNG download encountered an error: " + err.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origText; }
+  }
 }
 
-async function printSheet() {
-  const canvas = await captureSheetCanvas();
-  const imgData = canvas.toDataURL("image/png");
+function printSheet() {
+  const container = document.getElementById('sheet-pages-container');
+  if (!container) return;
+
   const win = window.open('', '_blank');
   if (!win) {
-    alert("Pop-up blocked! Please allow pop-ups for this site or use the PDF / PNG download buttons.");
+    alert("Pop-up blocked! Please allow pop-ups for this site or use the PDF download button.");
     return;
   }
+
+  const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+    .map(el => el.outerHTML)
+    .join('\n');
+
   win.document.write(`
+    <!DOCTYPE html>
     <html>
-      <head><title>Print Ocarina Tablature</title></head>
-      <body style="margin:0; padding:16px; display:flex; justify-content:center; background:#fff;">
-        <img src="${imgData}" style="max-width:100%; height:auto;" onload="setTimeout(function(){ window.focus(); window.print(); }, 200);"/>
+      <head>
+        <title>Print Ocarina Tablature</title>
+        ${styles}
+        <style>
+          body {
+            background: #ffffff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
+          }
+          .sheet-pages-wrapper {
+            gap: 0 !important;
+            padding: 0 !important;
+          }
+          .sheet-page {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            border-top: none !important;
+          }
+          @page {
+            size: letter portrait;
+            margin: 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="sheet-pages-wrapper">
+          ${container.innerHTML}
+        </div>
+        <script>
+          setTimeout(() => {
+            window.focus();
+            window.print();
+          }, 350);
+        <\/script>
       </body>
     </html>
   `);
   win.document.close();
 }
 
-async function exportPDF() {
-  if (recordedEvents.length === 0) return;
-  const canvas = await captureSheetCanvas();
-  const imgData = canvas.toDataURL("image/png");
-
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 24;
-
-  const maxW = pageWidth - margin * 2;
-  const maxH = pageHeight - margin * 2;
-  const ratio = Math.min(maxW / canvas.width, maxH / canvas.height);
-
-  const renderW = canvas.width * ratio;
-  const renderH = canvas.height * ratio;
-  const xOffset = (pageWidth - renderW) / 2;
-
-  pdf.addImage(imgData, 'PNG', xOffset, margin, renderW, renderH);
-  pdf.save("ocarina_action_sheet.pdf");
-}
-
 /**
  * ==============================================================================
  * MODULE 9: FULL IMPORT & EXPORT SUBSYSTEM (MIDI, TXT, CLIPBOARD)
  * ==============================================================================
- * Encodes and decodes Standard MIDI Files (SMF Format 0/1) with General MIDI
- * Program #79 (Ocarina) and handles `.txt` notation import/export.
  */
 function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -2912,14 +2919,8 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 2500);
 }
 
-/**
- * Serializes a single `OcarinaNoteEvent` into canonical controller notation
- * (`BUTTON[MODIFIERS]:DURATION[:GAP]`).
- */
 function eventToTextToken(ev, idx, allEvents) {
-  if (ev.isRest) {
-    return `REST:${Number((ev.duration || 0.44).toFixed(2))}`;
-  }
+  if (ev.isRest) return `REST:${Number((ev.duration || 0.44).toFixed(2))}`;
 
   let tok = ev.button;
   if (ev.dpad === 1) tok += "+#";
@@ -2938,9 +2939,7 @@ function eventToTextToken(ev, idx, allEvents) {
   if (allEvents && idx < allEvents.length - 1) {
     const nextEv = allEvents[idx + 1];
     const gap = nextEv.startTime - (ev.startTime + ev.duration);
-    if (gap > 0.08) {
-      tok += `:${Number(gap.toFixed(2))}`;
-    }
+    if (gap > 0.08) tok += `:${Number(gap.toFixed(2))}`;
   }
 
   return tok;
@@ -2985,9 +2984,6 @@ function showCopySuccess(btn) {
   }, 1800);
 }
 
-/**
- * Encodes a non-negative integer into MIDI Variable-Length Quantity (VLQ) bytes.
- */
 function encodeVLQ(val) {
   val = Math.max(0, Math.round(val));
   let bytes = [val & 0x7F];
@@ -2999,9 +2995,6 @@ function encodeVLQ(val) {
   return bytes;
 }
 
-/**
- * Generates a binary Standard MIDI File (Format 0, 120 BPM, 480 PPQ, GM Patch #79 Ocarina).
- */
 function generateMidiBlob(events) {
   const ticksPerBeat = 480;
   const ticksPerSec = 960;
@@ -3015,10 +3008,10 @@ function generateMidiBlob(events) {
   rawEvents.sort((a, b) => a.time === b.time ? a.type - b.type : a.time - b.time);
 
   let trackBytes = [];
-  const nameBytes = [0x4F, 0x63, 0x61, 0x72, 0x69, 0x6E, 0x61]; // "Ocarina"
+  const nameBytes = [0x4F, 0x63, 0x61, 0x72, 0x69, 0x6E, 0x61];
   trackBytes.push(0x00, 0xFF, 0x03, nameBytes.length, ...nameBytes);
-  trackBytes.push(0x00, 0xFF, 0x51, 0x03, 0x07, 0xA1, 0x20); // 500,000 us/quarter (120 BPM)
-  trackBytes.push(0x00, 0xC0, 79); // GM Program #79 (Ocarina)
+  trackBytes.push(0x00, 0xFF, 0x51, 0x03, 0x07, 0xA1, 0x20);
+  trackBytes.push(0x00, 0xC0, 79);
 
   let lastTick = 0;
   rawEvents.forEach(ev => {
@@ -3029,7 +3022,7 @@ function generateMidiBlob(events) {
     trackBytes.push(ev.type, ev.midi, ev.vel);
   });
 
-  trackBytes.push(0x00, 0xFF, 0x2F, 0x00); // End of Track
+  trackBytes.push(0x00, 0xFF, 0x2F, 0x00);
 
   let headerBytes = [
     0x4D, 0x54, 0x68, 0x64,
@@ -3058,9 +3051,6 @@ function exportMidiSong() {
   downloadBlob(blob, "ocarina_song.mid");
 }
 
-/**
- * Parses a Standard MIDI File binary ArrayBuffer into raw note events.
- */
 function parseMidiFile(arrayBuffer) {
   const data = new DataView(arrayBuffer);
   let offset = 0;
@@ -3131,8 +3121,7 @@ function parseMidiFile(arrayBuffer) {
         const metaLen = readVLQ();
         offset += metaLen;
       } else if (status === 0xF0 || status === 0xF7) {
-        const sysLen = readVLQ();
-        offset += sysLen;
+        offset += readVLQ();
       } else if (type === 0x90 || type === 0x80) {
         const note = data.getUint8(offset++);
         const vel = data.getUint8(offset++);
@@ -3166,10 +3155,6 @@ function parseMidiFile(arrayBuffer) {
   return { rawNotes, division: (division > 0 ? division : 480) };
 }
 
-/**
- * Converts parsed MIDI notes into a monophonic Switch 2 Ocarina sequence,
- * shifting octaves automatically so the melody sits within B3–F5.
- */
 function importMidiArrayBuffer(buffer) {
   const { rawNotes, division } = parseMidiFile(buffer);
   if (!rawNotes || rawNotes.length === 0) {
