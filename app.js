@@ -1718,7 +1718,8 @@ function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 18) {
 function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
   const W = 816;
   const H = 1056;
-  const scale = 1.5; // Sharp 150 DPI rendering (1224 x 1584 canvas)
+  // 2.0x Retina scale (1632 x 2112) eliminates blockiness and pixelation at high zoom
+  const scale = 2.0;
 
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(W * scale);
@@ -1746,7 +1747,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     ctx.textAlign = 'center';
     ctx.fillText('Ocarina of Time — Action Tablature', W / 2, 40);
 
-    ctx.font = '600 11.5px Inter, -apple-system, sans-serif';
+    ctx.font = '600 11.5px Inter, -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.fillStyle = '#64748b';
     ctx.fillText(`🎵 Notes: ${totalCount}   •   ⏱ ~${totalTime}s   •   🎮 Switch 2 Standard Tuning   •   📄 Page 1 of ${totalPages}`, W / 2, 59);
 
@@ -1841,7 +1842,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     const cx = 38 + col * (colW + gap);
     const cy = gridY + row * (cardH + gap);
 
-    // Card Body
+    // Card Container
     ctx.fillStyle = n.isRest ? '#f8fafc' : '#ffffff';
     ctx.strokeStyle = n.isRest ? '#94a3b8' : '#cbd5e1';
     ctx.lineWidth = 1.5;
@@ -1994,7 +1995,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
 }
 
 /**
- * Ultra-Fast High-Quality Vector Canvas PDF Exporter
+ * Ultra-Fast High-Resolution Vector Canvas PDF Exporter (Zero Freezing)
  */
 async function exportPDF() {
   const count = recordedEvents.length;
@@ -2007,6 +2008,10 @@ async function exportPDF() {
     btn.innerHTML = `⏳ Preparing...`;
   }
 
+  // Wait for Google Fonts to be fully parsed and allow UI paint
+  if (document.fonts && document.fonts.ready) {
+    await document.fonts.ready;
+  }
   await new Promise(r => setTimeout(r, 20));
 
   try {
@@ -2039,13 +2044,13 @@ async function exportPDF() {
 
     for (let i = 0; i < totalPages; i++) {
       if (btn) btn.innerHTML = `⏳ Page ${i + 1}/${totalPages}...`;
-      await new Promise(r => setTimeout(r, 15));
+      await new Promise(r => setTimeout(r, 12));
 
       const pageCanvas = renderPageToCanvas(pagesData[i], i + 1, totalPages, count, totalTime);
-      // High-resolution 0.88 JPEG: sharp text, zero blur, minimal artifacting
-      const imgData = pageCanvas.toDataURL("image/jpeg", 0.88);
+      // 0.94 quality disables 4:2:0 subsampling, eliminating blockiness around text and badges
+      const imgData = pageCanvas.toDataURL("image/jpeg", 0.94);
 
-      // Clean canvas immediately to release heap memory
+      // Immediately zero out canvas to prevent RAM accumulation
       pageCanvas.width = 0;
       pageCanvas.height = 0;
 

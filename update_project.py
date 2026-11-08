@@ -3,11 +3,18 @@ import re
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_FILE = os.path.join(ROOT_DIR, "app.js")
+HTML_FILES = [
+    os.path.join(ROOT_DIR, "index.html"),
+    os.path.join(ROOT_DIR, "index_2.html"),
+    os.path.join(ROOT_DIR, "index_3.html")
+]
 
-HIGH_QUALITY_ENGINE = """function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
+# 1. High-Resolution (2x Retina), Ultra-Fast 2D Canvas Engine
+CRISP_PDF_ENGINE = """function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
   const W = 816;
   const H = 1056;
-  const scale = 1.5; // Sharp 150 DPI rendering (1224 x 1584 canvas)
+  // 2.0x Retina scale (1632 x 2112) eliminates blockiness and pixelation at high zoom
+  const scale = 2.0;
 
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(W * scale);
@@ -35,7 +42,7 @@ HIGH_QUALITY_ENGINE = """function renderPageToCanvas(pageNotes, pageNum, totalPa
     ctx.textAlign = 'center';
     ctx.fillText('Ocarina of Time — Action Tablature', W / 2, 40);
 
-    ctx.font = '600 11.5px Inter, -apple-system, sans-serif';
+    ctx.font = '600 11.5px Inter, -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.fillStyle = '#64748b';
     ctx.fillText(`🎵 Notes: ${totalCount}   •   ⏱ ~${totalTime}s   •   🎮 Switch 2 Standard Tuning   •   📄 Page 1 of ${totalPages}`, W / 2, 59);
 
@@ -130,7 +137,7 @@ HIGH_QUALITY_ENGINE = """function renderPageToCanvas(pageNotes, pageNum, totalPa
     const cx = 38 + col * (colW + gap);
     const cy = gridY + row * (cardH + gap);
 
-    // Card Body
+    // Card Container
     ctx.fillStyle = n.isRest ? '#f8fafc' : '#ffffff';
     ctx.strokeStyle = n.isRest ? '#94a3b8' : '#cbd5e1';
     ctx.lineWidth = 1.5;
@@ -283,7 +290,7 @@ HIGH_QUALITY_ENGINE = """function renderPageToCanvas(pageNotes, pageNum, totalPa
 }
 
 /**
- * Ultra-Fast High-Quality Vector Canvas PDF Exporter
+ * Ultra-Fast High-Resolution Vector Canvas PDF Exporter (Zero Freezing)
  */
 async function exportPDF() {
   const count = recordedEvents.length;
@@ -296,6 +303,10 @@ async function exportPDF() {
     btn.innerHTML = `⏳ Preparing...`;
   }
 
+  // Wait for Google Fonts to be fully parsed and allow UI paint
+  if (document.fonts && document.fonts.ready) {
+    await document.fonts.ready;
+  }
   await new Promise(r => setTimeout(r, 20));
 
   try {
@@ -328,13 +339,13 @@ async function exportPDF() {
 
     for (let i = 0; i < totalPages; i++) {
       if (btn) btn.innerHTML = `⏳ Page ${i + 1}/${totalPages}...`;
-      await new Promise(r => setTimeout(r, 15));
+      await new Promise(r => setTimeout(r, 12));
 
       const pageCanvas = renderPageToCanvas(pagesData[i], i + 1, totalPages, count, totalTime);
-      // High-resolution 0.88 JPEG: sharp text, zero blur, minimal artifacting
-      const imgData = pageCanvas.toDataURL("image/jpeg", 0.88);
+      // 0.94 quality disables 4:2:0 subsampling, eliminating blockiness around text and badges
+      const imgData = pageCanvas.toDataURL("image/jpeg", 0.94);
 
-      // Clean canvas immediately to release heap memory
+      // Immediately zero out canvas to prevent RAM accumulation
       pageCanvas.width = 0;
       pageCanvas.height = 0;
 
@@ -366,14 +377,51 @@ def patch_app_js():
 
     normalized = content.replace("\r\n", "\n")
 
-    pattern = r"function renderPageToCanvas[\s\S]*?async function exportPDF\(\)[\s\S]*?(?=function printSheet\(\))"
+    pattern = r"function renderPageToCanvas[\s\S]*?(?=function printSheet\(\))"
     if re.search(pattern, normalized):
-        normalized = re.sub(pattern, HIGH_QUALITY_ENGINE + "\n\n", normalized, count=1)
+        normalized = re.sub(pattern, CRISP_PDF_ENGINE + "\n\n", normalized, count=1)
         with open(APP_FILE, 'w', encoding='utf-8', newline='\n') as f:
             f.write(normalized)
-        print("✓ Successfully updated app.js with high-res crisp export engine.")
+        print("✓ app.js: Upgraded to 2x Retina high-resolution canvas engine (0.94 quality).")
     else:
-        print("Notice: Pattern not matched directly. Ensure app.js contains renderPageToCanvas.")
+        print("Warning: renderPageToCanvas pattern not matched in app.js.")
+
+def update_version_in_html(filepath):
+    if not os.path.exists(filepath):
+        return
+
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    normalized = content.replace("\r\n", "\n")
+    match = re.search(r'<span id="app-version">v(\d+\.\d+)</span>', normalized)
+
+    if match:
+        curr_ver = float(match.group(1))
+        new_ver_str = f"v{curr_ver + 0.01:.2f}"
+        normalized = normalized.replace(match.group(0), f'<span id="app-version">{new_ver_str}</span>')
+        status = f"Incremented version to {new_ver_str}"
+    else:
+        new_ver_str = "v1.01"
+        footer_badge = (
+            '\n  <footer style="text-align:center; font-size:11px; color:#64748b; padding:8px 0 16px; font-family:monospace; user-select:none;">\n'
+            f'    <span id="app-version">{new_ver_str}</span>\n'
+            '  </footer>\n</div>'
+        )
+
+        panel_end_pattern = r'(\s*</div>\s*</div>\s*)(<!-- =+\s*FULL-SCREEN)'
+        if re.search(panel_end_pattern, normalized):
+            normalized = re.sub(panel_end_pattern, r'\1' + footer_badge + r'\n\n\2', normalized, count=1)
+        else:
+            normalized = normalized.replace("</body>", f'  <footer style="text-align:center; font-size:11px; color:#64748b; padding:8px 0 16px; font-family:monospace;"><span id="app-version">{new_ver_str}</span></footer>\n</body>')
+        status = f"Initialized version badge at {new_ver_str}"
+
+    with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(normalized)
+
+    print(f"✓ {os.path.basename(filepath)}: {status}")
 
 if __name__ == "__main__":
     patch_app_js()
+    for html_file in HTML_FILES:
+        update_version_in_html(html_file)
