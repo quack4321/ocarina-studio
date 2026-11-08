@@ -679,8 +679,8 @@ table.fingering-table tr:hover { background: #182030; cursor: pointer; }
 /* Full-Page Card Grid (5 Columns Standard) */
 .sheet-page-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 11px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
   align-content: start;
   flex: 1;
 }
@@ -706,7 +706,7 @@ table.fingering-table tr:hover { background: #182030; cursor: pointer; }
   justify-content: space-between;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
   position: relative;
-  height: 146px;
+  height: 148px;
   box-sizing: border-box;
   padding: 6px 4px 0 4px;
   overflow: hidden;

@@ -1481,6 +1481,11 @@ function renderSheetMusic() {
  * MODULE 8: HIGH-PERFORMANCE MULTI-PAGE EXPORTER (LIGHTWEIGHT PDF, PNG, PRINT)
  * ==============================================================================
  */
+/**
+ * ==============================================================================
+ * MODULE 8: HIGH-PERFORMANCE MULTI-PAGE EXPORTER (4-ACROSS GRID, RETINA PDF)
+ * ==============================================================================
+ */
 function renderPrintableHTMLSheet() {
   const container = document.getElementById('sheet-pages-container');
   if (!container) return;
@@ -1494,9 +1499,9 @@ function renderPrintableHTMLSheet() {
   const lastEv = recordedEvents[count - 1];
   const totalTime = (lastEv.startTime + lastEv.duration).toFixed(1);
 
-  // Pagination Architecture:
-  // Page 1: 20 notes (accommodates title, header & full legend)
-  // Page 2+: 25 notes per page (5 rows of 5)
+  // Pagination Architecture (4 Cards Across):
+  // Page 1: 20 notes (5 rows of 4 - fills bottom room below header & legend)
+  // Page 2+: 24 notes per page (6 rows of 4)
   let pagesData = [];
   if (count <= 20) {
     pagesData.push(recordedEvents.slice(0));
@@ -1504,8 +1509,8 @@ function renderPrintableHTMLSheet() {
     pagesData.push(recordedEvents.slice(0, 20));
     let offset = 20;
     while (offset < count) {
-      pagesData.push(recordedEvents.slice(offset, offset + 25));
-      offset += 25;
+      pagesData.push(recordedEvents.slice(offset, offset + 24));
+      offset += 24;
     }
   }
 
@@ -1517,15 +1522,15 @@ function renderPrintableHTMLSheet() {
 
   let tierClass = '';
   let iconPx = 32;
-  if (count <= 6) { tierClass = 'tier-xl'; iconPx = 42; }
-  else if (count <= 12) { tierClass = 'tier-lg'; iconPx = 36; }
+  if (count <= 4) { tierClass = 'tier-xl'; iconPx = 42; }
+  else if (count <= 8) { tierClass = 'tier-lg'; iconPx = 36; }
 
   container.innerHTML = "";
 
   pagesData.forEach((pageNotes, pageIdx) => {
     const pageNum = pageIdx + 1;
     const isFirstPage = pageNum === 1;
-    const globalOffset = isFirstPage ? 0 : 20 + (pageIdx - 1) * 25;
+    const globalOffset = isFirstPage ? 0 : 20 + (pageIdx - 1) * 24;
 
     const cardsHtml = pageNotes.map((n, idxOnPage) => {
       const globalIdx = globalOffset + idxOnPage;
@@ -1615,20 +1620,7 @@ function closeExportModal() {
   document.getElementById('export-modal').style.display = 'none';
 }
 
-/**
- * High-Speed, Lightweight Multi-Page PDF Exporter:
- * Generates compact ~1MB PDFs without UI lag.
- */
-/**
- * High-Speed Parallel Multi-Page PDF Exporter
- */
-/**
- * ==============================================================================
- * ULTRA-FAST DIRECT 2D CANVAS PDF ENGINE (Bypasses html2canvas entirely)
- * Generates full multi-page PDFs in ~0.15 seconds regardless of song length.
- * ==============================================================================
- */
-function drawCanvasDpad(ctx, cx, cy, dir, size = 18) {
+function drawCanvasDpad(ctx, cx, cy, dir, size = 20) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -1666,7 +1658,7 @@ function drawCanvasDpad(ctx, cx, cy, dir, size = 18) {
   ctx.restore();
 }
 
-function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 18) {
+function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 20) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -1718,7 +1710,7 @@ function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 18) {
 function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
   const W = 816;
   const H = 1056;
-  // 2.0x Retina scale (1632 x 2112) eliminates blockiness and pixelation at high zoom
+  // 2.0x Retina scale for crisp typography and vector-like badges
   const scale = 2.0;
 
   const canvas = document.createElement('canvas');
@@ -1737,7 +1729,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   ctx.fillRect(0, 0, W, 8);
 
   const isFirstPage = pageNum === 1;
-  const globalOffset = isFirstPage ? 0 : 20 + (pageNum - 2) * 25;
+  const globalOffset = isFirstPage ? 0 : 20 + (pageNum - 2) * 24;
 
   let gridY = 66;
 
@@ -1815,7 +1807,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     gridY = 66;
   }
 
-  // Footer
+  // Running Footer
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -1829,18 +1821,19 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   ctx.textAlign = 'right';
   ctx.fillText(`Page ${pageNum} of ${totalPages}`, W - 38, H - 18);
 
-  // Note Cards Grid (5 Columns)
-  const cols = 5;
-  const gap = 11;
-  const colW = (740 - (cols - 1) * gap) / cols;
-  const cardH = 146;
+  // 4 Cards Across Grid Layout
+  const cols = 4;
+  const gapX = 14;
+  const colW = (740 - (cols - 1) * gapX) / cols; // ~174.5px (25% wider)
+  const cardH = 148;
+  const gapY = isFirstPage ? 12 : 10;
 
   pageNotes.forEach((n, idxOnPage) => {
     const globalIdx = globalOffset + idxOnPage;
     const col = idxOnPage % cols;
     const row = Math.floor(idxOnPage / cols);
-    const cx = 38 + col * (colW + gap);
-    const cy = gridY + row * (cardH + gap);
+    const cx = 38 + col * (colW + gapX);
+    const cy = gridY + row * (cardH + gapY);
 
     // Card Container
     ctx.fillStyle = n.isRest ? '#f8fafc' : '#ffffff';
@@ -1857,10 +1850,10 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     ctx.setLineDash([]);
 
     // Step Number
-    ctx.font = '800 10px Inter, sans-serif';
+    ctx.font = '800 10.5px Inter, sans-serif';
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'left';
-    ctx.fillText('#' + (globalIdx + 1), cx + 7, cy + 15);
+    ctx.fillText('#' + (globalIdx + 1), cx + 8, cy + 16);
 
     // Button Badge
     const midX = cx + colW / 2;
@@ -1869,17 +1862,17 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     if (n.isRest) {
       ctx.fillStyle = '#475569';
       ctx.beginPath();
-      ctx.arc(midX, badgeY, 17, 0, Math.PI * 2);
+      ctx.arc(midX, badgeY, 18, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 15px sans-serif';
+      ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('⏸', midX, badgeY + 5);
+      ctx.fillText('⏸', midX, badgeY + 5.5);
     } else if (n.button === 'L') {
       ctx.fillStyle = '#64748b';
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(midX - 24, badgeY - 14, 48, 28, [15, 5, 5, 5]);
-      else ctx.rect(midX - 24, badgeY - 14, 48, 28);
+      if (ctx.roundRect) ctx.roundRect(midX - 26, badgeY - 14, 52, 29, [16, 5, 5, 5]);
+      else ctx.rect(midX - 26, badgeY - 14, 52, 29);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 16px Inter, sans-serif';
@@ -1888,8 +1881,8 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     } else if (n.button === 'R') {
       ctx.fillStyle = '#64748b';
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(midX - 24, badgeY - 14, 48, 28, [5, 15, 5, 5]);
-      else ctx.rect(midX - 24, badgeY - 14, 48, 28);
+      if (ctx.roundRect) ctx.roundRect(midX - 26, badgeY - 14, 52, 29, [5, 16, 5, 5]);
+      else ctx.rect(midX - 26, badgeY - 14, 52, 29);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 16px Inter, sans-serif';
@@ -1899,12 +1892,12 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
       const colors = { 'A': '#3b82f6', 'Y': '#10b981', 'X': '#06b6d4' };
       ctx.fillStyle = colors[n.button] || '#64748b';
       ctx.beginPath();
-      ctx.arc(midX, badgeY, 18, 0, Math.PI * 2);
+      ctx.arc(midX, badgeY, 19, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 17px Inter, sans-serif';
+      ctx.font = '900 18px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(n.button, midX, badgeY + 6);
+      ctx.fillText(n.button, midX, badgeY + 6.5);
     }
 
     // Modifier Icons
@@ -1920,23 +1913,23 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     const iconY = cy + 62;
     if (icons.length === 1) {
       const ic = icons[0];
-      if (ic.type === 'dpad') drawCanvasDpad(ctx, midX, iconY, ic.dir, 20);
-      else drawCanvasStick(ctx, midX, iconY, ic.dir, ic.intensity, 20);
+      if (ic.type === 'dpad') drawCanvasDpad(ctx, midX, iconY, ic.dir, 22);
+      else drawCanvasStick(ctx, midX, iconY, ic.dir, ic.intensity, 22);
     } else if (icons.length >= 2) {
-      const startX = midX - ((icons.length - 1) * 11);
+      const startX = midX - ((icons.length - 1) * 12);
       icons.forEach((ic, iIdx) => {
-        const thisX = startX + iIdx * 22;
-        if (ic.type === 'dpad') drawCanvasDpad(ctx, thisX, iconY, ic.dir, 18);
-        else drawCanvasStick(ctx, thisX, iconY, ic.dir, ic.intensity, 18);
+        const thisX = startX + iIdx * 24;
+        if (ic.type === 'dpad') drawCanvasDpad(ctx, thisX, iconY, ic.dir, 20);
+        else drawCanvasStick(ctx, thisX, iconY, ic.dir, ic.intensity, 20);
       });
     }
 
     // Modifier Text Pill
     const isNatural = !n.pdfMod || n.pdfMod === 'NATURAL';
     const pillText = isNatural ? 'Natural' : n.pdfMod;
-    ctx.font = '800 8.5px Inter, sans-serif';
-    const pillW = Math.min(colW - 14, ctx.measureText(pillText).width + 10);
-    const pillH = 15;
+    ctx.font = '800 9px Inter, sans-serif';
+    const pillW = Math.min(colW - 16, ctx.measureText(pillText).width + 12);
+    const pillH = 16;
     const pillY = cy + 82;
 
     ctx.fillStyle = isNatural ? '#f1f5f9' : '#fff7ed';
@@ -1950,31 +1943,31 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
 
     ctx.fillStyle = isNatural ? '#94a3b8' : '#c2410c';
     ctx.textAlign = 'center';
-    ctx.fillText(pillText, midX, pillY + 11);
+    ctx.fillText(pillText, midX, pillY + 11.5);
 
     // Duration Badge
     if (showNoteDurations) {
       const durText = `⏱ ${n.duration.toFixed(2)}s`;
-      ctx.font = '700 8.5px Inter, sans-serif';
-      const durW = ctx.measureText(durText).width + 8;
-      const durY = cy + 101;
+      ctx.font = '700 9px Inter, sans-serif';
+      const durW = ctx.measureText(durText).width + 10;
+      const durY = cy + 102;
 
       ctx.fillStyle = '#f0f9ff';
       ctx.strokeStyle = '#bae6fd';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(midX - durW / 2, durY, durW, 14, 999);
-      else ctx.rect(midX - durW / 2, durY, durW, 14);
+      if (ctx.roundRect) ctx.roundRect(midX - durW / 2, durY, durW, 15, 999);
+      else ctx.rect(midX - durW / 2, durY, durW, 15);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = '#0369a1';
       ctx.textAlign = 'center';
-      ctx.fillText(durText, midX, durY + 10.5);
+      ctx.fillText(durText, midX, durY + 11);
     }
 
     // Pitch Strip
-    const pitchH = 22;
+    const pitchH = 24;
     const pitchY = cy + cardH - pitchH;
     ctx.fillStyle = '#f8fafc';
     ctx.strokeStyle = '#e2e8f0';
@@ -1985,10 +1978,10 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     ctx.fill();
     ctx.stroke();
 
-    ctx.font = '800 12.5px Inter, sans-serif';
+    ctx.font = '800 13px Inter, sans-serif';
     ctx.fillStyle = '#0f172a';
     ctx.textAlign = 'center';
-    ctx.fillText(n.pitch, midX, pitchY + 15.5);
+    ctx.fillText(n.pitch, midX, pitchY + 16.5);
   });
 
   return canvas;
@@ -2008,7 +2001,6 @@ async function exportPDF() {
     btn.innerHTML = `⏳ Preparing...`;
   }
 
-  // Wait for Google Fonts to be fully parsed and allow UI paint
   if (document.fonts && document.fonts.ready) {
     await document.fonts.ready;
   }
@@ -2026,6 +2018,7 @@ async function exportPDF() {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
+    // 4-Across Pagination: Page 1 = 20 notes, Page 2+ = 24 notes
     let pagesData = [];
     if (count <= 20) {
       pagesData.push(recordedEvents.slice(0));
@@ -2033,8 +2026,8 @@ async function exportPDF() {
       pagesData.push(recordedEvents.slice(0, 20));
       let offset = 20;
       while (offset < count) {
-        pagesData.push(recordedEvents.slice(offset, offset + 25));
-        offset += 25;
+        pagesData.push(recordedEvents.slice(offset, offset + 24));
+        offset += 24;
       }
     }
 
@@ -2047,10 +2040,8 @@ async function exportPDF() {
       await new Promise(r => setTimeout(r, 12));
 
       const pageCanvas = renderPageToCanvas(pagesData[i], i + 1, totalPages, count, totalTime);
-      // 0.94 quality disables 4:2:0 subsampling, eliminating blockiness around text and badges
       const imgData = pageCanvas.toDataURL("image/jpeg", 0.94);
 
-      // Immediately zero out canvas to prevent RAM accumulation
       pageCanvas.width = 0;
       pageCanvas.height = 0;
 
