@@ -761,7 +761,7 @@ table.fingering-table tr:hover { background: #182030; cursor: pointer; }
   justify-content: center;
   gap: 2px;
   width: 100%;
-  min-height: 52px;
+  min-height: 66px;
 }
 .print-mod-pill {
   padding: 1.5px 6px;

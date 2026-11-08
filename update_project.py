@@ -13,7 +13,7 @@ HTML_FILES = [
 # ==============================================================================
 # NOTE FOR AI / DEVELOPERS:
 # ALWAYS increment the version number ONLY by the most minor version place (+0.01)
-# every time a change is generated (e.g. v1.01 -> v1.02 -> v1.03).
+# every time a change is generated (e.g. v1.01 -> v1.02 -> v1.03 -> v1.04).
 # NEVER increment the major or minor tenths place automatically.
 # ==============================================================================
 
@@ -30,7 +30,7 @@ NEW_MODULE_8 = """function renderPrintableHTMLSheet() {
   const lastEv = recordedEvents[count - 1];
   const totalTime = (lastEv.startTime + lastEv.duration).toFixed(1);
 
-  // 4 Cards Across: Page 1 = 5 rows x 4 = 20 notes (fills bottom room); Page 2+ = 6 rows x 4 = 24 notes
+  // 4 Cards Across: Page 1 = 5 rows x 4 = 20 notes; Page 2+ = 6 rows x 4 = 24 notes
   let pagesData = [];
   if (count <= 20) {
     pagesData.push(recordedEvents.slice(0));
@@ -50,9 +50,10 @@ NEW_MODULE_8 = """function renderPrintableHTMLSheet() {
   }
 
   let tierClass = '';
-  let iconPx = 32;
-  if (count <= 4) { tierClass = 'tier-xl'; iconPx = 42; }
-  else if (count <= 8) { tierClass = 'tier-lg'; iconPx = 36; }
+  // Match icon size directly to the 38px button badges (tier-lg: 44px, tier-xl: 52px)
+  let iconPx = 38;
+  if (count <= 4) { tierClass = 'tier-xl'; iconPx = 52; }
+  else if (count <= 8) { tierClass = 'tier-lg'; iconPx = 44; }
 
   container.innerHTML = "";
 
@@ -75,7 +76,7 @@ NEW_MODULE_8 = """function renderPrintableHTMLSheet() {
           <span class="print-card-step">#${globalIdx + 1}</span>
           <div class="print-badge ${shoulderClass}" style="background:${badgeColor};">${badgeSymbol}</div>
           <div class="print-mod-area">
-            ${icons.length > 0 ? `<div class="combo-icon-row">${icons.join('')}</div>` : ''}
+            ${icons.length > 0 ? `<div class="combo-icon-row" style="min-height:${iconPx}px;">${icons.join('')}</div>` : `<div style="min-height:${iconPx}px;"></div>`}
             <span class="print-mod-pill ${isNatural ? 'natural' : 'active'}">${isNatural ? 'Natural' : n.pdfMod}</span>
             ${showNoteDurations ? `<span class="print-dur-badge">⏱ ${n.duration.toFixed(2)}s</span>` : ''}
           </div>
@@ -149,7 +150,7 @@ function closeExportModal() {
   document.getElementById('export-modal').style.display = 'none';
 }
 
-function drawCanvasDpad(ctx, cx, cy, dir, size = 22) {
+function drawCanvasDpad(ctx, cx, cy, dir, size = 38) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -187,7 +188,7 @@ function drawCanvasDpad(ctx, cx, cy, dir, size = 22) {
   ctx.restore();
 }
 
-function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 22) {
+function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 38) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -383,9 +384,9 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     ctx.textAlign = 'left';
     ctx.fillText('#' + (globalIdx + 1), cx + 8, cy + 16);
 
-    // Button Badge
+    // Button Badge (centered at badgeY)
     const midX = cx + colW / 2;
-    const badgeY = cy + 28;
+    const badgeY = cy + 27;
 
     if (n.isRest) {
       ctx.fillStyle = '#475569';
@@ -428,7 +429,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
       ctx.fillText(n.button, midX, badgeY + 6.5);
     }
 
-    // Modifier Icons
+    // Modifier Icons: Scaled up to 38px matching button badge diameter
     let icons = [];
     if (n.dpad === 1) icons.push({ type: 'dpad', dir: 'up' });
     if (n.dpad === -1) icons.push({ type: 'dpad', dir: 'down' });
@@ -438,17 +439,20 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     if (n.stickDir === 'down-half') icons.push({ type: 'stick', dir: 'down', intensity: 'half' });
     if (n.hasVibrato) icons.push({ type: 'stick', dir: 'vibrato', intensity: 'none' });
 
-    const iconY = cy + 62;
+    const iconSize = 38;
+    const iconY = cy + 66;
+
     if (icons.length === 1) {
       const ic = icons[0];
-      if (ic.type === 'dpad') drawCanvasDpad(ctx, midX, iconY, ic.dir, 22);
-      else drawCanvasStick(ctx, midX, iconY, ic.dir, ic.intensity, 22);
+      if (ic.type === 'dpad') drawCanvasDpad(ctx, midX, iconY, ic.dir, iconSize);
+      else drawCanvasStick(ctx, midX, iconY, ic.dir, ic.intensity, iconSize);
     } else if (icons.length >= 2) {
-      const startX = midX - ((icons.length - 1) * 12);
+      const spacing = iconSize + 4;
+      const startX = midX - ((icons.length - 1) * spacing / 2);
       icons.forEach((ic, iIdx) => {
-        const thisX = startX + iIdx * 24;
-        if (ic.type === 'dpad') drawCanvasDpad(ctx, thisX, iconY, ic.dir, 20);
-        else drawCanvasStick(ctx, thisX, iconY, ic.dir, ic.intensity, 20);
+        const thisX = startX + iIdx * spacing;
+        if (ic.type === 'dpad') drawCanvasDpad(ctx, thisX, iconY, ic.dir, iconSize);
+        else drawCanvasStick(ctx, thisX, iconY, ic.dir, ic.intensity, iconSize);
       });
     }
 
@@ -457,8 +461,8 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
     const pillText = isNatural ? 'Natural' : n.pdfMod;
     ctx.font = '800 9px Inter, sans-serif';
     const pillW = Math.min(colW - 16, ctx.measureText(pillText).width + 12);
-    const pillH = 16;
-    const pillY = cy + 82;
+    const pillH = 15;
+    const pillY = cy + 88;
 
     ctx.fillStyle = isNatural ? '#f1f5f9' : '#fff7ed';
     ctx.strokeStyle = isNatural ? '#e2e8f0' : '#fdba74';
@@ -471,27 +475,28 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
 
     ctx.fillStyle = isNatural ? '#94a3b8' : '#c2410c';
     ctx.textAlign = 'center';
-    ctx.fillText(pillText, midX, pillY + 11.5);
+    ctx.fillText(pillText, midX, pillY + 11);
 
     // Duration Badge
     if (showNoteDurations) {
       const durText = `⏱ ${n.duration.toFixed(2)}s`;
       ctx.font = '700 9px Inter, sans-serif';
       const durW = ctx.measureText(durText).width + 10;
-      const durY = cy + 102;
+      const durY = cy + 106;
+      const durH = 14;
 
       ctx.fillStyle = '#f0f9ff';
       ctx.strokeStyle = '#bae6fd';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(midX - durW / 2, durY, durW, 15, 999);
-      else ctx.rect(midX - durW / 2, durY, durW, 15);
+      if (ctx.roundRect) ctx.roundRect(midX - durW / 2, durY, durW, durH, 999);
+      else ctx.rect(midX - durW / 2, durY, durW, durH);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = '#0369a1';
       ctx.textAlign = 'center';
-      ctx.fillText(durText, midX, durY + 11);
+      ctx.fillText(durText, midX, durY + 10.5);
     }
 
     // Pitch Strip
@@ -596,23 +601,12 @@ def update_style_css():
         content = f.read()
 
     normalized = content.replace("\r\n", "\n")
-
-    # Update .sheet-page-grid to 4 columns across
-    grid_pattern = r"\.sheet-page-grid\s*\{[^}]*\}"
-    new_grid_css = """.sheet-page-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 14px !important;
-  align-content: start;
-  flex: 1;
-}"""
-    normalized = re.sub(grid_pattern, new_grid_css, normalized, count=1)
-    normalized = re.sub(r"height:\s*146px;", "height: 148px;", normalized)
+    normalized = normalized.replace("min-height: 52px;", "min-height: 66px;")
 
     with open(STYLE_FILE, 'w', encoding='utf-8', newline='\n') as f:
         f.write(normalized)
 
-    print("✓ style.css: Configured grid to 4 columns across (14px gap, 148px card height).")
+    print("✓ style.css: Adjusted .print-mod-area min-height to 66px for 38px modifier icons.")
 
 def update_app_js():
     if not os.path.exists(APP_FILE):
@@ -623,7 +617,13 @@ def update_app_js():
 
     normalized = content.replace("\r\n", "\n")
 
-    # Reliable substring location
+    # Sync interactive sheet music card icons to match badge size
+    normalized = normalized.replace(
+        "let iconPx = count <= 6 ? 32 : count <= 12 ? 28 : 24;",
+        "let iconPx = count <= 6 ? 40 : count <= 12 ? 34 : 30;"
+    )
+
+    # Substring replacement for Module 8
     start_tag = "function renderPrintableHTMLSheet()"
     end_tag = "function printSheet()"
 
@@ -636,21 +636,25 @@ def update_app_js():
         updated_content = prefix + NEW_MODULE_8 + "\n" + suffix
         with open(APP_FILE, 'w', encoding='utf-8', newline='\n') as f:
             f.write(updated_content)
-        print("✓ app.js: Replaced Module 8 with 4-across pagination and 2x Retina canvas exporter.")
+        print("✓ app.js: Scaled stick and d-pad icons to 38px matching button icons in both Canvas and HTML sheets.")
     else:
-        print(f"Error locating boundaries in app.js: start_idx={start_idx}, end_idx={end_idx}")
+        print(f"Error locating Module 8 boundaries in app.js: start_idx={start_idx}, end_idx={end_idx}")
 
 def get_next_version(content):
-    # Find current version or initialize
     match = re.search(r'v(\d+\.\d+)', content)
     if match:
         curr = float(match.group(1))
-        # ALWAYS increment only the most minor hundredths place (+0.01)
         next_ver = curr + 0.01
         return f"v{next_ver:.2f}"
-    return "v1.02"
+    return "v1.04"
 
 def update_html_files():
+    base_html = HTML_FILES[0]
+    new_ver = "v1.04"
+    if os.path.exists(base_html):
+        with open(base_html, 'r', encoding='utf-8') as f:
+            new_ver = get_next_version(f.read())
+
     for filepath in HTML_FILES:
         if not os.path.exists(filepath):
             continue
@@ -659,21 +663,20 @@ def update_html_files():
             content = f.read()
 
         normalized = content.replace("\r\n", "\n")
-        new_ver = get_next_version(normalized)
 
         # 1. Update cache-busting query strings for style.css and app.js
         normalized = re.sub(r'href="style\.css(\?v=[^"]*)?"', f'href="style.css?v={new_ver}"', normalized)
         normalized = re.sub(r'src="app\.js(\?v=[^"]*)?"', f'src="app.js?v={new_ver}"', normalized)
 
-        # 2. Update/insert modal title badge
-        modal_title_pattern = r'(<div class="modal-title">[\s\S]*?<span>📜</span>\s*Tablature Preview)([\s\S]*?)(</div>)'
-        if re.search(modal_title_pattern, normalized):
-            badge_html = f'\\1 <span id="modal-app-version" class="panel-meta-badge" style="color:#facc15; border-color:#ca8a04;">{new_ver}</span>\\3'
-            # Strip previous version tag inside title if present
-            cleaned_title = re.sub(r'<span id="modal-app-version"[^>]*>[^<]*</span>', '', normalized)
-            normalized = re.sub(r'(<div class="modal-title">[\s\S]*?<span>📜</span>\s*Tablature Preview)([\s\S]*?)(</div>)', f'\\1 <span id="modal-app-version" class="panel-meta-badge" style="color:#facc15; border-color:#ca8a04; margin-left:6px;">{new_ver}</span>\\3', cleaned_title)
+        # 2. Update modal title badge
+        cleaned_title = re.sub(r'<span id="modal-app-version"[^>]*>[^<]*</span>', '', normalized)
+        normalized = re.sub(
+            r'(<div class="modal-title">[\s\S]*?<span>📜</span>\s*Tablature Preview)([\s\S]*?)(</div>)',
+            f'\\1 <span id="modal-app-version" class="panel-meta-badge" style="color:#facc15; border-color:#ca8a04; margin-left:6px;">{new_ver}</span>\\3',
+            cleaned_title
+        )
 
-        # 3. Update/insert footer version tag
+        # 3. Update footer version tag
         if '<span id="app-version">' in normalized:
             normalized = re.sub(r'<span id="app-version">[^<]*</span>', f'<span id="app-version">{new_ver}</span>', normalized)
         else:
@@ -683,10 +686,12 @@ def update_html_files():
         with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
             f.write(normalized)
 
-        print(f"✓ {os.path.basename(filepath)}: Updated to {new_ver} with cache-busting and visible modal badge.")
-        return new_ver
+        print(f"✓ {os.path.basename(filepath)}: Updated to {new_ver} with cache-busting and visible badges.")
+
+    return new_ver
 
 if __name__ == "__main__":
     update_style_css()
     update_app_js()
     final_ver = update_html_files()
+    print(f"\nSuccessfully migrated project to {final_ver}!")
