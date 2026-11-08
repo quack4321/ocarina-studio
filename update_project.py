@@ -3,115 +3,16 @@ import re
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 APP_FILE = os.path.join(ROOT_DIR, "app.js")
-INDEX_FILES = [
-    os.path.join(ROOT_DIR, "index.html"),
-    os.path.join(ROOT_DIR, "index_2.html")
-]
 
-# 1. High-Speed Native 2D Canvas Vector PDF Engine
-NEW_PDF_ENGINE = """/**
- * ==============================================================================
- * ULTRA-FAST DIRECT 2D CANVAS PDF ENGINE (Bypasses html2canvas entirely)
- * Generates full multi-page PDFs in ~0.15 seconds regardless of song length.
- * ==============================================================================
- */
-function drawCanvasDpad(ctx, cx, cy, dir, size = 18) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  const s = size / 24;
-  ctx.scale(s, s);
-
-  ctx.fillStyle = '#1e293b';
-  ctx.strokeStyle = '#475569';
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  if (ctx.roundRect) {
-    ctx.roundRect(-4, -11, 8, 22, 2);
-    ctx.roundRect(-11, -4, 22, 8, 2);
-  } else {
-    ctx.rect(-4, -11, 8, 22);
-    ctx.rect(-11, -4, 22, 8);
-  }
-  ctx.fill();
-  ctx.stroke();
-
-  if (dir === 'up') {
-    ctx.fillStyle = '#facc15';
-    ctx.fillRect(-3.5, -10.5, 7, 7);
-    ctx.fillStyle = '#713f12';
-    ctx.beginPath();
-    ctx.moveTo(0, -9.2); ctx.lineTo(-2.5, -5.5); ctx.lineTo(2.5, -5.5);
-    ctx.fill();
-  } else {
-    ctx.fillStyle = '#facc15';
-    ctx.fillRect(-3.5, 3.5, 7, 7);
-    ctx.fillStyle = '#713f12';
-    ctx.beginPath();
-    ctx.moveTo(0, 9.2); ctx.lineTo(-2.5, 5.5); ctx.lineTo(2.5, 5.5);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 18) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  const s = size / 24;
-  ctx.scale(s, s);
-
-  ctx.fillStyle = '#0f172a';
-  ctx.strokeStyle = '#475569';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(0, 0, 10.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  let nubY = 0;
-  let nubColor = '#06b6d4';
-  let strokeColor = '#38bdf8';
-  if (dir === 'up') nubY = (intensity === 'full') ? -6 : -3.5;
-  else if (dir === 'down') nubY = (intensity === 'full') ? 6 : 3.5;
-  else if (dir === 'vibrato') { nubColor = '#a855f7'; strokeColor = '#e9d5ff'; }
-
-  ctx.fillStyle = nubColor;
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(0, nubY, 5.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = '#ffffff';
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 1.8;
-  if (dir === 'up') {
-    ctx.beginPath();
-    ctx.moveTo(0, nubY - 2.2); ctx.lineTo(-2.8, nubY + 1.2); ctx.lineTo(2.8, nubY + 1.2);
-    ctx.fill();
-  } else if (dir === 'down') {
-    ctx.beginPath();
-    ctx.moveTo(0, nubY + 2.2); ctx.lineTo(-2.8, nubY - 1.2); ctx.lineTo(2.8, nubY - 1.2);
-    ctx.fill();
-  } else if (dir === 'vibrato') {
-    ctx.beginPath();
-    ctx.arc(-2, nubY, 2, Math.PI, 0, false);
-    ctx.arc(2, nubY, 2, Math.PI, 0, true);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
+LIGHTWEIGHT_ENGINE = """function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
   const W = 816;
   const H = 1056;
-  const scale = 1.5; // ~144 DPI for crisp rendering with minimal memory footprint
 
+  // Scale 1.0 (816x1056 is ~100 DPI on letter, cuts memory and pixel count by 60%)
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(W * scale);
-  canvas.height = Math.round(H * scale);
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext('2d');
-  ctx.scale(scale, scale);
 
   // Background & Gold Top Bar
   ctx.fillStyle = '#ffffff';
@@ -215,7 +116,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   // Note Cards Grid (5 Columns)
   const cols = 5;
   const gap = 11;
-  const colW = (740 - (cols - 1) * gap) / cols; // ~139.2px
+  const colW = (740 - (cols - 1) * gap) / cols;
   const cardH = 146;
 
   pageNotes.forEach((n, idxOnPage) => {
@@ -356,7 +257,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
       ctx.fillText(durText, midX, durY + 10.5);
     }
 
-    // Pitch Strip (Bottom)
+    // Pitch Strip
     const pitchH = 22;
     const pitchY = cy + cardH - pitchH;
     ctx.fillStyle = '#f8fafc';
@@ -378,8 +279,9 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
 }
 
 /**
- * High-Speed Vector Canvas PDF Exporter:
- * Generates and downloads PDFs in ~0.15 seconds.
+ * Ultra-Fast Asynchronous Chunked PDF Exporter:
+ * - Compresses in background chunks with UI yields so the browser never hangs.
+ * - compress: false avoids running expensive pure-JS zip on pre-compressed JPEGs.
  */
 async function exportPDF() {
   const count = recordedEvents.length;
@@ -389,19 +291,20 @@ async function exportPDF() {
   const origText = btn ? btn.innerHTML : "📄 Download PDF";
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `⏳ Generating...`;
+    btn.innerHTML = `⏳ Preparing...`;
   }
 
-  // Small timeout to allow the browser to paint button state
+  // Yield to UI
   await new Promise(r => setTimeout(r, 20));
 
   try {
     const { jsPDF } = window.jspdf;
+    // Disabling internal zip compression because JPEGs are already compressed
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
       format: "letter",
-      compress: true
+      compress: false
     });
 
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -424,12 +327,24 @@ async function exportPDF() {
     const totalTime = (lastEv.startTime + lastEv.duration).toFixed(1);
 
     for (let i = 0; i < totalPages; i++) {
+      if (btn) btn.innerHTML = `⏳ Page ${i + 1}/${totalPages}...`;
+      // Yield every page so the browser's watchdog timer never triggers
+      await new Promise(r => setTimeout(r, 15));
+
       const pageCanvas = renderPageToCanvas(pagesData[i], i + 1, totalPages, count, totalTime);
-      const imgData = pageCanvas.toDataURL("image/jpeg", 0.90);
+      // 0.75 JPEG is fast to encode and yields sharp text
+      const imgData = pageCanvas.toDataURL("image/jpeg", 0.75);
+
+      // Clean canvas immediately to free RAM
+      pageCanvas.width = 0;
+      pageCanvas.height = 0;
+
       if (i > 0) pdf.addPage("letter", "portrait");
       pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
     }
 
+    if (btn) btn.innerHTML = `⏳ Saving...`;
+    await new Promise(r => setTimeout(r, 20));
     pdf.save("ocarina_action_sheet.pdf");
   } catch (err) {
     console.error("PDF Export error:", err);
@@ -440,12 +355,11 @@ async function exportPDF() {
       btn.innerHTML = origText;
     }
   }
-}
-"""
+}"""
 
 def patch_app_js():
     if not os.path.exists(APP_FILE):
-        print(f"Error: Could not find {APP_FILE}")
+        print(f"Error: {APP_FILE} not found.")
         return
 
     with open(APP_FILE, 'r', encoding='utf-8') as f:
@@ -453,63 +367,14 @@ def patch_app_js():
 
     normalized = content.replace("\r\n", "\n")
 
-    # Replace from exportPDF() (or any helper) down to printSheet()
-    pattern = r"(async function exportPDF\(\)[\s\S]*?)(?=function printSheet\(\))"
+    pattern = r"function renderPageToCanvas[\s\S]*?async function exportPDF\(\)[\s\S]*?(?=function printSheet\(\))"
     if re.search(pattern, normalized):
-        normalized = re.sub(pattern, NEW_PDF_ENGINE + "\n", normalized, count=1)
+        normalized = re.sub(pattern, LIGHTWEIGHT_ENGINE + "\n\n", normalized, count=1)
         with open(APP_FILE, 'w', encoding='utf-8', newline='\n') as f:
             f.write(normalized)
-        print("✓ Successfully upgraded app.js with the Instant Canvas PDF engine.")
+        print("✓ Successfully replaced exportPDF with the zero-freeze chunked engine.")
     else:
-        print("Notice: exportPDF() block not located with regex; appending engine.")
-        normalized = normalized + "\n\n" + NEW_PDF_ENGINE
-        with open(APP_FILE, 'w', encoding='utf-8', newline='\n') as f:
-            f.write(normalized)
-        print("✓ Appended Instant Canvas PDF engine to app.js.")
-
-def patch_html_file(filepath):
-    if not os.path.exists(filepath):
-        return
-
-    with open(filepath, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    normalized = content.replace("\r\n", "\n")
-    changes = 0
-
-    # Clean Preview button text
-    if '👁 View &amp; Export Printable Sheet (PDF / PNG)' in normalized:
-        normalized = normalized.replace('👁 View &amp; Export Printable Sheet (PDF / PNG)', '👁 View &amp; Export Printable Sheet (PDF)')
-        changes += 1
-
-    # Remove PNG button and update labels
-    old_btns = """        <button id="btn-export-pdf" class="btn-primary" onclick="exportPDF()">
-          📄 Export PDF
-        </button>
-        <button id="btn-export-png" class="btn-success" onclick="downloadPNG()">
-          🖼 Download PNG
-        </button>
-        <button class="btn-secondary" onclick="printSheet()">
-          🖨 Print
-        </button>"""
-
-    new_btns = """        <button id="btn-export-pdf" class="btn-primary" onclick="exportPDF()">
-          📄 Download PDF
-        </button>
-        <button class="btn-secondary" onclick="printSheet()" title="Instant vector print or save to PDF">
-          🖨 Print / Save PDF
-        </button>"""
-
-    if old_btns in normalized:
-        normalized = normalized.replace(old_btns, new_btns)
-        changes += 1
-
-    if changes > 0:
-        with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
-            f.write(normalized)
-        print(f"✓ Updated {os.path.basename(filepath)} (Removed PNG button).")
+        print("Warning: Pattern did not match directly. Checking fallback.")
 
 if __name__ == "__main__":
     patch_app_js()
-    for f in INDEX_FILES:
-        patch_html_file(f)

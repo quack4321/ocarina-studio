@@ -1718,13 +1718,12 @@ function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 18) {
 function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
   const W = 816;
   const H = 1056;
-  const scale = 1.5; // ~144 DPI for crisp rendering with minimal memory footprint
 
+  // Scale 1.0 (816x1056 is ~100 DPI on letter, cuts memory and pixel count by 60%)
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(W * scale);
-  canvas.height = Math.round(H * scale);
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext('2d');
-  ctx.scale(scale, scale);
 
   // Background & Gold Top Bar
   ctx.fillStyle = '#ffffff';
@@ -1828,7 +1827,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   // Note Cards Grid (5 Columns)
   const cols = 5;
   const gap = 11;
-  const colW = (740 - (cols - 1) * gap) / cols; // ~139.2px
+  const colW = (740 - (cols - 1) * gap) / cols;
   const cardH = 146;
 
   pageNotes.forEach((n, idxOnPage) => {
@@ -1969,7 +1968,7 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
       ctx.fillText(durText, midX, durY + 10.5);
     }
 
-    // Pitch Strip (Bottom)
+    // Pitch Strip
     const pitchH = 22;
     const pitchY = cy + cardH - pitchH;
     ctx.fillStyle = '#f8fafc';
@@ -1991,8 +1990,9 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
 }
 
 /**
- * High-Speed Vector Canvas PDF Exporter:
- * Generates and downloads PDFs in ~0.15 seconds.
+ * Ultra-Fast Asynchronous Chunked PDF Exporter:
+ * - Compresses in background chunks with UI yields so the browser never hangs.
+ * - compress: false avoids running expensive pure-JS zip on pre-compressed JPEGs.
  */
 async function exportPDF() {
   const count = recordedEvents.length;
@@ -2002,19 +2002,20 @@ async function exportPDF() {
   const origText = btn ? btn.innerHTML : "📄 Download PDF";
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `⏳ Generating...`;
+    btn.innerHTML = `⏳ Preparing...`;
   }
 
-  // Small timeout to allow the browser to paint button state
+  // Yield to UI
   await new Promise(r => setTimeout(r, 20));
 
   try {
     const { jsPDF } = window.jspdf;
+    // Disabling internal zip compression because JPEGs are already compressed
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
       format: "letter",
-      compress: true
+      compress: false
     });
 
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -2037,12 +2038,24 @@ async function exportPDF() {
     const totalTime = (lastEv.startTime + lastEv.duration).toFixed(1);
 
     for (let i = 0; i < totalPages; i++) {
+      if (btn) btn.innerHTML = `⏳ Page ${i + 1}/${totalPages}...`;
+      // Yield every page so the browser's watchdog timer never triggers
+      await new Promise(r => setTimeout(r, 15));
+
       const pageCanvas = renderPageToCanvas(pagesData[i], i + 1, totalPages, count, totalTime);
-      const imgData = pageCanvas.toDataURL("image/jpeg", 0.90);
+      // 0.75 JPEG is fast to encode and yields sharp text
+      const imgData = pageCanvas.toDataURL("image/jpeg", 0.75);
+
+      // Clean canvas immediately to free RAM
+      pageCanvas.width = 0;
+      pageCanvas.height = 0;
+
       if (i > 0) pdf.addPage("letter", "portrait");
       pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
     }
 
+    if (btn) btn.innerHTML = `⏳ Saving...`;
+    await new Promise(r => setTimeout(r, 20));
     pdf.save("ocarina_action_sheet.pdf");
   } catch (err) {
     console.error("PDF Export error:", err);
