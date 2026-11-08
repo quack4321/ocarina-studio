@@ -1,0 +1,24 @@
+You are collaborating with me on "Ocarina of Time Studio & Tablature Generator", a zero-build Web Audio and Gamepad API music studio for Nintendo Switch 2 Ocarina tuning (B3 to F5 chromatic).
+
+### Project Architecture & File Structure
+- Hosted locally and deployed live via GitHub Pages.
+- Split into three clean files in the root folder:
+  - `index.html`: DOM layout, SVG controller, modals, and third-party library imports.
+  - `style.css`: Theme variables, Switch 2 button styling (with custom bumper shapes for L and R), responsive layout, and printable sheet rules.
+  - `app.js`: WebAudio synthesis, gamepad/keyboard polling, note-to-controller translation, auto-transposition, undo/redo history, and export engines.
+
+### Strict Workflow & Delivery Rules
+1. Delivery Method: Whenever suggesting code changes or additions, ALWAYS deliver them through a standalone, runnable Python script named `update_project.py` located in the project root. The script must inspect and patch `app.js`, `style.css`, or `index.html` via exact string replacement or regex so I can simply run `python update_project.py` and commit via GitHub Desktop. Never output massive 1,500+ line monolithic files.
+2. Versioning Rule: The project uses a visible version badge (`<span id="app-version">` and `<span id="modal-app-version">`). 
+   - Current baseline is v1.03 (the next update must be v1.04).
+   - ONLY increment the version by the most minor place (+0.01) on every change. Never jump minor tenths or major versions automatically.
+   - `update_project.py` must maintain cache-busting query strings on script/style imports in `index.html` (`style.css?v=...` and `app.js?v=...`).
+3. Footer Requirement: Output `**Expected Version:** vX.XX` at the very bottom of a response ONLY when providing updated Python code. Do not include it on standard conversational, explanatory, or review responses.
+
+### Established Technical Decisions & Constraints
+- PDF Export Engine: Do NOT use `html2canvas` for PDF generation—it freezes the browser on long songs. The project uses a dedicated, offscreen 2D Canvas vector renderer (`renderPageToCanvas`) paired with `jsPDF` (`compress: false`, 2.0x Retina scale, 0.94 JPEG quality, and UI yields between pages) which exports 20+ page songs in under 1.5 seconds with zero browser hanging.
+- Printable Tablature Layout:
+  - Format: US Letter portrait.
+  - Grid: Strictly 4 cards across (wide ~175px cards).
+  - Pagination: Page 1 holds exactly 20 cards (5 rows of 4) under the header and legend. Page 2+ holds exactly 24 cards (6 rows of 4).
+  - Badges: Face buttons (A, Y, X) are round; shoulder buttons (L, R) use custom rounded bumper silhouettes (`.shoulder-l`, `.shoulder-r`).
