@@ -17,13 +17,7 @@ HTML_FILES = [
 # NEVER increment the major or minor tenths place automatically.
 # ==============================================================================
 
-# Complete, self-contained Module 8 with 4-across grid and Retina canvas export
-MODULE_8_CODE = """/**
- * ==============================================================================
- * MODULE 8: HIGH-PERFORMANCE MULTI-PAGE EXPORTER (4-ACROSS GRID, RETINA PDF)
- * ==============================================================================
- */
-function renderPrintableHTMLSheet() {
+NEW_MODULE_8 = """function renderPrintableHTMLSheet() {
   const container = document.getElementById('sheet-pages-container');
   if (!container) return;
 
@@ -36,9 +30,7 @@ function renderPrintableHTMLSheet() {
   const lastEv = recordedEvents[count - 1];
   const totalTime = (lastEv.startTime + lastEv.duration).toFixed(1);
 
-  // Pagination Architecture (4 Cards Across):
-  // Page 1: 20 notes (5 rows of 4 - fills bottom room below header & legend)
-  // Page 2+: 24 notes per page (6 rows of 4)
+  // 4 Cards Across: Page 1 = 5 rows x 4 = 20 notes (fills bottom room); Page 2+ = 6 rows x 4 = 24 notes
   let pagesData = [];
   if (count <= 20) {
     pagesData.push(recordedEvents.slice(0));
@@ -157,7 +149,7 @@ function closeExportModal() {
   document.getElementById('export-modal').style.display = 'none';
 }
 
-function drawCanvasDpad(ctx, cx, cy, dir, size = 20) {
+function drawCanvasDpad(ctx, cx, cy, dir, size = 22) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -195,7 +187,7 @@ function drawCanvasDpad(ctx, cx, cy, dir, size = 20) {
   ctx.restore();
 }
 
-function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 20) {
+function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 22) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -247,7 +239,6 @@ function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 20) {
 function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
   const W = 816;
   const H = 1056;
-  // 2.0x Retina scale for crisp typography and vector-like badges
   const scale = 2.0;
 
   const canvas = document.createElement('canvas');
@@ -358,10 +349,10 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   ctx.textAlign = 'right';
   ctx.fillText(`Page ${pageNum} of ${totalPages}`, W - 38, H - 18);
 
-  // 4 Cards Across Grid Layout
+  // 4 Cards Across Grid Layout (174.5px wide per card)
   const cols = 4;
   const gapX = 14;
-  const colW = (740 - (cols - 1) * gapX) / cols; // ~174.5px (25% wider)
+  const colW = (740 - (cols - 1) * gapX) / cols;
   const cardH = 148;
   const gapY = isFirstPage ? 12 : 10;
 
@@ -524,9 +515,6 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   return canvas;
 }
 
-/**
- * Ultra-Fast High-Resolution Vector Canvas PDF Exporter (Zero Freezing)
- */
 async function exportPDF() {
   const count = recordedEvents.length;
   if (count === 0) return;
@@ -555,7 +543,6 @@ async function exportPDF() {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // 4-Across Pagination: Page 1 = 20 notes, Page 2+ = 24 notes
     let pagesData = [];
     if (count <= 20) {
       pagesData.push(recordedEvents.slice(0));
@@ -598,11 +585,11 @@ async function exportPDF() {
       btn.innerHTML = origText;
     }
   }
-}"""
+}
+"""
 
 def update_style_css():
     if not os.path.exists(STYLE_FILE):
-        print(f"Error: Could not find {STYLE_FILE}")
         return
 
     with open(STYLE_FILE, 'r', encoding='utf-8') as f:
@@ -610,34 +597,25 @@ def update_style_css():
 
     normalized = content.replace("\r\n", "\n")
 
-    # Update sheet-page-grid from 5 to 4 columns with 14px gap
-    normalized = re.sub(
-        r"\.sheet-page-grid\s*\{[^}]*\}",
-        """.sheet-page-grid {
+    # Update .sheet-page-grid to 4 columns across
+    grid_pattern = r"\.sheet-page-grid\s*\{[^}]*\}"
+    new_grid_css = """.sheet-page-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 14px !important;
   align-content: start;
   flex: 1;
-}""",
-        normalized
-    )
-
-    # Update print-card height to 148px
-    normalized = re.sub(
-        r"height:\s*146px;",
-        "height: 148px;",
-        normalized
-    )
+}"""
+    normalized = re.sub(grid_pattern, new_grid_css, normalized, count=1)
+    normalized = re.sub(r"height:\s*146px;", "height: 148px;", normalized)
 
     with open(STYLE_FILE, 'w', encoding='utf-8', newline='\n') as f:
         f.write(normalized)
 
-    print("✓ style.css: Grid updated to 4 columns across (14px gap, 148px card height).")
+    print("✓ style.css: Configured grid to 4 columns across (14px gap, 148px card height).")
 
 def update_app_js():
     if not os.path.exists(APP_FILE):
-        print(f"Error: Could not find {APP_FILE}")
         return
 
     with open(APP_FILE, 'r', encoding='utf-8') as f:
@@ -645,62 +623,70 @@ def update_app_js():
 
     normalized = content.replace("\r\n", "\n")
 
-    # Replace Module 8 cleanly
-    pattern = r"/\*\*\s*=\s*\n\s*\*\s*MODULE 8:[\s\S]*?(?=function printSheet\(\))"
-    if re.search(pattern, normalized):
-        normalized = re.sub(pattern, MODULE_8_CODE + "\n\n", normalized, count=1)
+    # Reliable substring location
+    start_tag = "function renderPrintableHTMLSheet()"
+    end_tag = "function printSheet()"
+
+    start_idx = normalized.find(start_tag)
+    end_idx = normalized.find(end_tag)
+
+    if start_idx != -1 and end_idx != -1:
+        prefix = normalized[:start_idx]
+        suffix = normalized[end_idx:]
+        updated_content = prefix + NEW_MODULE_8 + "\n" + suffix
         with open(APP_FILE, 'w', encoding='utf-8', newline='\n') as f:
-            f.write(normalized)
-        print("✓ app.js: Upgraded Module 8 to 4-across pagination & 2x Retina canvas exporter.")
+            f.write(updated_content)
+        print("✓ app.js: Replaced Module 8 with 4-across pagination and 2x Retina canvas exporter.")
     else:
-        # Fallback search from renderPrintableHTMLSheet to printSheet
-        fallback_pattern = r"function renderPrintableHTMLSheet\(\)[\s\S]*?(?=function printSheet\(\))"
-        if re.search(fallback_pattern, normalized):
-            normalized = re.sub(fallback_pattern, MODULE_8_CODE + "\n\n", normalized, count=1)
-            with open(APP_FILE, 'w', encoding='utf-8', newline='\n') as f:
-                f.write(normalized)
-            print("✓ app.js: Upgraded Module 8 to 4-across pagination via fallback.")
-        else:
-            print("Notice: Module 8 block not found in app.js.")
+        print(f"Error locating boundaries in app.js: start_idx={start_idx}, end_idx={end_idx}")
 
-def update_version_in_html(filepath):
-    if not os.path.exists(filepath):
-        return
-
-    with open(filepath, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    normalized = content.replace("\r\n", "\n")
-    match = re.search(r'<span id="app-version">v(\d+\.\d+)</span>', normalized)
-
-    # NOTE: Always increment version by the most minor number place (+0.01) every time.
+def get_next_version(content):
+    # Find current version or initialize
+    match = re.search(r'v(\d+\.\d+)', content)
     if match:
-        curr_ver = float(match.group(1))
-        new_ver_str = f"v{curr_ver + 0.01:.2f}"
-        normalized = normalized.replace(match.group(0), f'<span id="app-version">{new_ver_str}</span>')
-        status = f"Incremented version to {new_ver_str}"
-    else:
-        new_ver_str = "v1.01"
-        footer_badge = (
-            '\n  <footer style="text-align:center; font-size:11px; color:#64748b; padding:8px 0 16px; font-family:monospace; user-select:none;">\n'
-            f'    <span id="app-version">{new_ver_str}</span>\n'
-            '  </footer>\n</div>'
-        )
+        curr = float(match.group(1))
+        # ALWAYS increment only the most minor hundredths place (+0.01)
+        next_ver = curr + 0.01
+        return f"v{next_ver:.2f}"
+    return "v1.02"
 
-        panel_end_pattern = r'(\s*</div>\s*</div>\s*)(<!-- =+\s*FULL-SCREEN)'
-        if re.search(panel_end_pattern, normalized):
-            normalized = re.sub(panel_end_pattern, r'\1' + footer_badge + r'\n\n\2', normalized, count=1)
+def update_html_files():
+    for filepath in HTML_FILES:
+        if not os.path.exists(filepath):
+            continue
+
+        with open(filepath, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        normalized = content.replace("\r\n", "\n")
+        new_ver = get_next_version(normalized)
+
+        # 1. Update cache-busting query strings for style.css and app.js
+        normalized = re.sub(r'href="style\.css(\?v=[^"]*)?"', f'href="style.css?v={new_ver}"', normalized)
+        normalized = re.sub(r'src="app\.js(\?v=[^"]*)?"', f'src="app.js?v={new_ver}"', normalized)
+
+        # 2. Update/insert modal title badge
+        modal_title_pattern = r'(<div class="modal-title">[\s\S]*?<span>📜</span>\s*Tablature Preview)([\s\S]*?)(</div>)'
+        if re.search(modal_title_pattern, normalized):
+            badge_html = f'\\1 <span id="modal-app-version" class="panel-meta-badge" style="color:#facc15; border-color:#ca8a04;">{new_ver}</span>\\3'
+            # Strip previous version tag inside title if present
+            cleaned_title = re.sub(r'<span id="modal-app-version"[^>]*>[^<]*</span>', '', normalized)
+            normalized = re.sub(r'(<div class="modal-title">[\s\S]*?<span>📜</span>\s*Tablature Preview)([\s\S]*?)(</div>)', f'\\1 <span id="modal-app-version" class="panel-meta-badge" style="color:#facc15; border-color:#ca8a04; margin-left:6px;">{new_ver}</span>\\3', cleaned_title)
+
+        # 3. Update/insert footer version tag
+        if '<span id="app-version">' in normalized:
+            normalized = re.sub(r'<span id="app-version">[^<]*</span>', f'<span id="app-version">{new_ver}</span>', normalized)
         else:
-            normalized = normalized.replace("</body>", f'  <footer style="text-align:center; font-size:11px; color:#64748b; padding:8px 0 16px; font-family:monospace;"><span id="app-version">{new_ver_str}</span></footer>\n</body>')
-        status = f"Initialized version badge at {new_ver_str}"
+            footer_badge = f'\n  <footer style="text-align:center; font-size:11px; color:#64748b; padding:8px 0 16px; font-family:monospace; user-select:none;"><span id="app-version">{new_ver}</span></footer>\n'
+            normalized = normalized.replace("</body>", footer_badge + "</body>")
 
-    with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
-        f.write(normalized)
+        with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
+            f.write(normalized)
 
-    print(f"✓ {os.path.basename(filepath)}: {status}")
+        print(f"✓ {os.path.basename(filepath)}: Updated to {new_ver} with cache-busting and visible modal badge.")
+        return new_ver
 
 if __name__ == "__main__":
     update_style_css()
     update_app_js()
-    for html_file in HTML_FILES:
-        update_version_in_html(html_file)
+    final_ver = update_html_files()

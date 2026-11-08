@@ -1499,9 +1499,7 @@ function renderPrintableHTMLSheet() {
   const lastEv = recordedEvents[count - 1];
   const totalTime = (lastEv.startTime + lastEv.duration).toFixed(1);
 
-  // Pagination Architecture (4 Cards Across):
-  // Page 1: 20 notes (5 rows of 4 - fills bottom room below header & legend)
-  // Page 2+: 24 notes per page (6 rows of 4)
+  // 4 Cards Across: Page 1 = 5 rows x 4 = 20 notes (fills bottom room); Page 2+ = 6 rows x 4 = 24 notes
   let pagesData = [];
   if (count <= 20) {
     pagesData.push(recordedEvents.slice(0));
@@ -1620,7 +1618,7 @@ function closeExportModal() {
   document.getElementById('export-modal').style.display = 'none';
 }
 
-function drawCanvasDpad(ctx, cx, cy, dir, size = 20) {
+function drawCanvasDpad(ctx, cx, cy, dir, size = 22) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -1658,7 +1656,7 @@ function drawCanvasDpad(ctx, cx, cy, dir, size = 20) {
   ctx.restore();
 }
 
-function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 20) {
+function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 22) {
   ctx.save();
   ctx.translate(cx, cy);
   const s = size / 24;
@@ -1710,7 +1708,6 @@ function drawCanvasStick(ctx, cx, cy, dir, intensity = 'full', size = 20) {
 function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTime) {
   const W = 816;
   const H = 1056;
-  // 2.0x Retina scale for crisp typography and vector-like badges
   const scale = 2.0;
 
   const canvas = document.createElement('canvas');
@@ -1821,10 +1818,10 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   ctx.textAlign = 'right';
   ctx.fillText(`Page ${pageNum} of ${totalPages}`, W - 38, H - 18);
 
-  // 4 Cards Across Grid Layout
+  // 4 Cards Across Grid Layout (174.5px wide per card)
   const cols = 4;
   const gapX = 14;
-  const colW = (740 - (cols - 1) * gapX) / cols; // ~174.5px (25% wider)
+  const colW = (740 - (cols - 1) * gapX) / cols;
   const cardH = 148;
   const gapY = isFirstPage ? 12 : 10;
 
@@ -1987,9 +1984,6 @@ function renderPageToCanvas(pageNotes, pageNum, totalPages, totalCount, totalTim
   return canvas;
 }
 
-/**
- * Ultra-Fast High-Resolution Vector Canvas PDF Exporter (Zero Freezing)
- */
 async function exportPDF() {
   const count = recordedEvents.length;
   if (count === 0) return;
@@ -2018,7 +2012,6 @@ async function exportPDF() {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // 4-Across Pagination: Page 1 = 20 notes, Page 2+ = 24 notes
     let pagesData = [];
     if (count <= 20) {
       pagesData.push(recordedEvents.slice(0));
