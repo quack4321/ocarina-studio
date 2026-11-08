@@ -198,7 +198,7 @@
       <!-- Primary Sheet Export Action -->
       <div class="btn-row">
         <button id="btn-open-preview" class="btn-primary" onclick="openExportModal()" disabled style="background:#1d4ed8;">
-          👁 View &amp; Export Printable Sheet (PDF / PNG)
+          👁 View &amp; Export Printable Sheet (PDF)
         </button>
       </div>
 
@@ -299,13 +299,10 @@
           ⏱ Timing
         </label>
         <button id="btn-export-pdf" class="btn-primary" onclick="exportPDF()">
-          📄 Export PDF
+          📄 Download PDF
         </button>
-        <button id="btn-export-png" class="btn-success" onclick="downloadPNG()">
-          🖼 Download PNG
-        </button>
-        <button class="btn-secondary" onclick="printSheet()">
-          🖨 Print
+        <button class="btn-secondary" onclick="printSheet()" title="Instant vector print or save to PDF">
+          🖨 Print / Save PDF
         </button>
         <button class="btn-secondary" onclick="closeExportModal()" title="Close preview (Esc)">
           ✕

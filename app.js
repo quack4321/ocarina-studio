@@ -1619,21 +1619,23 @@ function closeExportModal() {
  * High-Speed, Lightweight Multi-Page PDF Exporter:
  * Generates compact ~1MB PDFs without UI lag.
  */
+/**
+ * High-Speed Parallel Multi-Page PDF Exporter
+ */
 async function exportPDF() {
   if (recordedEvents.length === 0) return;
-  const pageEls = document.querySelectorAll('.sheet-page');
+  const pageEls = Array.from(document.querySelectorAll('.sheet-page'));
   if (!pageEls || pageEls.length === 0) return;
 
   const btn = document.getElementById('btn-export-pdf');
-  const origText = btn ? btn.innerHTML : "📄 Export PDF";
+  const origText = btn ? btn.innerHTML : "📄 Download PDF";
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `⏳ Exporting...`;
+    btn.innerHTML = `⏳ Generating PDF...`;
   }
 
   try {
     const { jsPDF } = window.jspdf;
-    // Standard US Letter (612pt x 792pt)
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "pt",
@@ -1644,27 +1646,24 @@ async function exportPDF() {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    for (let i = 0; i < pageEls.length; i++) {
-      if (btn) btn.innerHTML = `⏳ Page ${i + 1}/${pageEls.length}...`;
-      await new Promise(r => setTimeout(r, 20));
-
-      // Capture single page with balanced scale (1.8x gives ~170 DPI, crisp text & tiny memory footprint)
-      const canvas = await html2canvas(pageEls[i], {
-        scale: 1.8,
+    // Render all pages in parallel with fast 1.25x scale (~120 DPI, ~60% faster)
+    const renderPromises = pageEls.map(pageEl =>
+      html2canvas(pageEl, {
+        scale: 1.25,
         backgroundColor: "#ffffff",
         useCORS: true,
         logging: false
-      });
+      })
+    );
 
-      // High quality JPEG (0.90) compresses each page to ~180KB instead of 50MB raw PNG
-      const imgData = canvas.toDataURL("image/jpeg", 0.90);
+    const canvases = await Promise.all(renderPromises);
 
+    canvases.forEach((canvas, i) => {
+      const imgData = canvas.toDataURL("image/jpeg", 0.85);
       if (i > 0) pdf.addPage("letter", "portrait");
       pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
-    }
+    });
 
-    if (btn) btn.innerHTML = `⏳ Saving PDF...`;
-    await new Promise(r => setTimeout(r, 20));
     pdf.save("ocarina_action_sheet.pdf");
   } catch (err) {
     console.error("PDF Export error:", err);
@@ -1674,36 +1673,6 @@ async function exportPDF() {
       btn.disabled = false;
       btn.innerHTML = origText;
     }
-  }
-}
-
-async function downloadPNG() {
-  const pageEls = document.querySelectorAll('.sheet-page');
-  if (!pageEls || pageEls.length === 0) return;
-
-  const btn = document.getElementById('btn-export-png');
-  const origText = btn ? btn.innerHTML : "🖼 Download PNG";
-  if (btn) { btn.disabled = true; btn.innerHTML = "⏳ Generating..."; }
-
-  try {
-    for (let i = 0; i < pageEls.length; i++) {
-      const canvas = await html2canvas(pageEls[i], {
-        scale: 2.0,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-        logging: false
-      });
-      const suffix = pageEls.length > 1 ? `_page_${i + 1}` : "";
-      const a = document.createElement('a');
-      a.download = `ocarina_action_sheet${suffix}.png`;
-      a.href = canvas.toDataURL("image/png");
-      a.click();
-      if (pageEls.length > 1) await new Promise(r => setTimeout(r, 300));
-    }
-  } catch (err) {
-    alert("PNG download encountered an error: " + err.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = origText; }
   }
 }
 

@@ -1,204 +1,137 @@
 import os
+import re
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-STYLE_FILE = os.path.join(ROOT_DIR, "style.css")
 APP_FILE = os.path.join(ROOT_DIR, "app.js")
+INDEX_FILES = [
+    os.path.join(ROOT_DIR, "index.html"),
+    os.path.join(ROOT_DIR, "index_2.html")
+]
 
-# 1. Update style.css
-STYLE_OLD = """.print-badge {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 18px;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.22);
-  margin-top: 4px;
-}
-.print-mod-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 100%;
-  min-height: 42px;
+# 1. Update app.js (Parallelized high-speed exportPDF, remove downloadPNG)
+APP_PDF_REPLACEMENT = """/**
+ * High-Speed Parallel Multi-Page PDF Exporter
+ */
+async function exportPDF() {
+  if (recordedEvents.length === 0) return;
+  const pageEls = Array.from(document.querySelectorAll('.sheet-page'));
+  if (!pageEls || pageEls.length === 0) return;
+
+  const btn = document.getElementById('btn-export-pdf');
+  const origText = btn ? btn.innerHTML : "📄 Download PDF";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `⏳ Generating PDF...`;
+  }
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "letter",
+      compress: true
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // Render all pages in parallel with fast 1.25x scale (~120 DPI, ~60% faster)
+    const renderPromises = pageEls.map(pageEl =>
+      html2canvas(pageEl, {
+        scale: 1.25,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        logging: false
+      })
+    );
+
+    const canvases = await Promise.all(renderPromises);
+
+    canvases.forEach((canvas, i) => {
+      const imgData = canvas.toDataURL("image/jpeg", 0.85);
+      if (i > 0) pdf.addPage("letter", "portrait");
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+    });
+
+    pdf.save("ocarina_action_sheet.pdf");
+  } catch (err) {
+    console.error("PDF Export error:", err);
+    alert("PDF generation encountered an error: " + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origText;
+    }
+  }
 }"""
 
-STYLE_NEW = """.print-badge {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 18px;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.22);
-  margin-top: 4px;
-}
-/* Shoulder Bumper Styling for L & R Buttons */
-.print-badge.shoulder-l,
-.badge-icon.shoulder-l {
-  width: 48px !important;
-  height: 30px !important;
-  border-radius: 16px 5px 6px 6px !important;
-  border-top: 2px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 -2px 4px rgba(0,0,0,0.2) !important;
-}
-.print-badge.shoulder-r,
-.badge-icon.shoulder-r {
-  width: 48px !important;
-  height: 30px !important;
-  border-radius: 5px 16px 6px 6px !important;
-  border-top: 2px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 -2px 4px rgba(0,0,0,0.2) !important;
-}
-.print-mod-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 100%;
-  min-height: 52px;
-}"""
-
-# 2. Update app.js
-APP_SHEET_OLD = """let iconPx = count <= 6 ? 26 : count <= 12 ? 22 : 18;
-  let cardMinW = count <= 6 ? 112 : count <= 12 ? 98 : 84;
-  let badgePx = count <= 6 ? 40 : count <= 12 ? 34 : 30;
-  let badgeFont = count <= 6 ? 17 : count <= 12 ? 15 : 14;
-  let pitchFont = count <= 6 ? 13 : 11.5;
-
-  container.innerHTML = "";
-  recordedEvents.forEach((n, idx) => {
-    const card = document.createElement('div');
-    card.className = `note-card ${n.isRest ? 'rest-card' : ''}`;
-    card.style.minWidth = `${cardMinW}px`;
-    card.style.padding = count <= 6 ? "12px 10px" : "8px 6px";
-    card.onclick = () => auditionCard(idx);
-
-    const bg = n.isRest ? "#334155" : (BASE_PITCHES[n.button]?.color || "#334155");
-    const icons = buildModifierIconsHtml(n, iconPx);
-    const iconRow = icons.length > 0
-      ? `<div class="combo-icon-row" style="min-height:${iconPx}px;">${icons.join('')}</div>`
-      : `<div style="min-height:${iconPx}px;"></div>`;
-
-    const badgeSymbol = n.isRest ? "⏸" : n.button;
-
-    card.innerHTML = `
-      <div class="card-delete-btn" title="Remove note" onclick="event.stopPropagation(); deleteCard(${idx});">✕</div>
-      <div class="badge-icon" style="background:${bg}; width:${badgePx}px; height:${badgePx}px; font-size:${badgeFont}px;">${badgeSymbol}</div>"""
-
-APP_SHEET_NEW = """let iconPx = count <= 6 ? 32 : count <= 12 ? 28 : 24;
-  let cardMinW = count <= 6 ? 112 : count <= 12 ? 98 : 84;
-  let badgePx = count <= 6 ? 40 : count <= 12 ? 34 : 30;
-  let badgeFont = count <= 6 ? 17 : count <= 12 ? 15 : 14;
-  let pitchFont = count <= 6 ? 13 : 11.5;
-
-  container.innerHTML = "";
-  recordedEvents.forEach((n, idx) => {
-    const card = document.createElement('div');
-    card.className = `note-card ${n.isRest ? 'rest-card' : ''}`;
-    card.style.minWidth = `${cardMinW}px`;
-    card.style.padding = count <= 6 ? "12px 10px" : "8px 6px";
-    card.onclick = () => auditionCard(idx);
-
-    const bg = n.isRest ? "#334155" : (BASE_PITCHES[n.button]?.color || "#334155");
-    const icons = buildModifierIconsHtml(n, iconPx);
-    const iconRow = icons.length > 0
-      ? `<div class="combo-icon-row" style="min-height:${iconPx}px;">${icons.join('')}</div>`
-      : `<div style="min-height:${iconPx}px;"></div>`;
-
-    const badgeSymbol = n.isRest ? "⏸" : n.button;
-    const shoulderClass = (n.button === 'L' || n.button === 'R') ? `shoulder-${n.button.toLowerCase()}` : '';
-
-    card.innerHTML = `
-      <div class="card-delete-btn" title="Remove note" onclick="event.stopPropagation(); deleteCard(${idx});">✕</div>
-      <div class="badge-icon ${shoulderClass}" style="background:${bg}; width:${badgePx}px; height:${badgePx}px; font-size:${badgeFont}px;">${badgeSymbol}</div>"""
-
-APP_PRINT_OLD = """let tierClass = '';
-  let iconPx = 20;
-  if (count <= 6) { tierClass = 'tier-xl'; iconPx = 30; }
-  else if (count <= 12) { tierClass = 'tier-lg'; iconPx = 24; }
-
-  container.innerHTML = "";
-
-  pagesData.forEach((pageNotes, pageIdx) => {
-    const pageNum = pageIdx + 1;
-    const isFirstPage = pageNum === 1;
-    const globalOffset = isFirstPage ? 0 : 20 + (pageIdx - 1) * 25;
-
-    const cardsHtml = pageNotes.map((n, idxOnPage) => {
-      const globalIdx = globalOffset + idxOnPage;
-      const rgb = n.isRest ? [71, 85, 105] : (BASE_PITCHES[n.button]?.hex || [100, 116, 139]);
-      const badgeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-      const icons = buildModifierIconsHtml(n, iconPx);
-      const isNatural = !n.pdfMod || n.pdfMod === "NATURAL";
-      const badgeSymbol = n.isRest ? "⏸" : n.button;
-
-      return `
-        <div class="print-card ${n.isRest ? 'rest-card' : ''}">
-          <span class="print-card-step">#${globalIdx + 1}</span>
-          <div class="print-badge" style="background:${badgeColor};">${badgeSymbol}</div>"""
-
-APP_PRINT_NEW = """let tierClass = '';
-  let iconPx = 32;
-  if (count <= 6) { tierClass = 'tier-xl'; iconPx = 42; }
-  else if (count <= 12) { tierClass = 'tier-lg'; iconPx = 36; }
-
-  container.innerHTML = "";
-
-  pagesData.forEach((pageNotes, pageIdx) => {
-    const pageNum = pageIdx + 1;
-    const isFirstPage = pageNum === 1;
-    const globalOffset = isFirstPage ? 0 : 20 + (pageIdx - 1) * 25;
-
-    const cardsHtml = pageNotes.map((n, idxOnPage) => {
-      const globalIdx = globalOffset + idxOnPage;
-      const rgb = n.isRest ? [71, 85, 105] : (BASE_PITCHES[n.button]?.hex || [100, 116, 139]);
-      const badgeColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-      const icons = buildModifierIconsHtml(n, iconPx);
-      const isNatural = !n.pdfMod || n.pdfMod === "NATURAL";
-      const badgeSymbol = n.isRest ? "⏸" : n.button;
-      const shoulderClass = (n.button === 'L' || n.button === 'R') ? `shoulder-${n.button.toLowerCase()}` : '';
-
-      return `
-        <div class="print-card ${n.isRest ? 'rest-card' : ''}">
-          <span class="print-card-step">#${globalIdx + 1}</span>
-          <div class="print-badge ${shoulderClass}" style="background:${badgeColor};">${badgeSymbol}</div>"""
-
-def patch_file(filepath, replacements):
-    if not os.path.exists(filepath):
-        print(f"Error: Could not find {filepath}")
+def patch_app_js():
+    if not os.path.exists(APP_FILE):
+        print(f"Error: {APP_FILE} not found.")
         return
-    
+
+    with open(APP_FILE, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    normalized = content.replace("\r\n", "\n")
+
+    # Replace from exportPDF() down to right before printSheet()
+    pattern = r"async function exportPDF\(\)[\s\S]*?(?=function printSheet\(\))"
+    if re.search(pattern, normalized):
+        normalized = re.sub(pattern, APP_PDF_REPLACEMENT + "\n\n", normalized, count=1)
+        with open(APP_FILE, 'w', encoding='utf-8', newline='\n') as f:
+            f.write(normalized)
+        print("✓ Successfully updated app.js (High-speed parallel PDF exporter enabled).")
+    else:
+        print("Notice: exportPDF() block pattern not matched in app.js.")
+
+# 2. Update HTML files (Remove PNG button & clean export buttons)
+def patch_html_file(filepath):
+    if not os.path.exists(filepath):
+        return
+
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Normalize CRLF/LF line endings for reliable matching
     normalized = content.replace("\r\n", "\n")
     changes = 0
 
-    for old, new in replacements:
-        norm_old = old.replace("\r\n", "\n")
-        norm_new = new.replace("\r\n", "\n")
-        if norm_old in normalized:
-            normalized = normalized.replace(norm_old, norm_new, 1)
-            changes += 1
+    # Clean Preview button text
+    old_preview_btn = '👁 View &amp; Export Printable Sheet (PDF / PNG)'
+    new_preview_btn = '👁 View &amp; Export Printable Sheet (PDF)'
+    if old_preview_btn in normalized:
+        normalized = normalized.replace(old_preview_btn, new_preview_btn)
+        changes += 1
+
+    # Remove PNG modal button and update Print button label
+    old_actions = """        <button id="btn-export-pdf" class="btn-primary" onclick="exportPDF()">
+          📄 Export PDF
+        </button>
+        <button id="btn-export-png" class="btn-success" onclick="downloadPNG()">
+          🖼 Download PNG
+        </button>
+        <button class="btn-secondary" onclick="printSheet()">
+          🖨 Print
+        </button>"""
+
+    new_actions = """        <button id="btn-export-pdf" class="btn-primary" onclick="exportPDF()">
+          📄 Download PDF
+        </button>
+        <button class="btn-secondary" onclick="printSheet()" title="Instant vector print or save to PDF">
+          🖨 Print / Save PDF
+        </button>"""
+
+    if old_actions in normalized:
+        normalized = normalized.replace(old_actions, new_actions)
+        changes += 1
 
     if changes > 0:
         with open(filepath, 'w', encoding='utf-8', newline='\n') as f:
             f.write(normalized)
-        print(f"Successfully applied {changes} patch(es) to {os.path.basename(filepath)}")
-    else:
-        print(f"No match found for {os.path.basename(filepath)} (it may already be patched).")
+        print(f"✓ Successfully updated {os.path.basename(filepath)} (Removed PNG button).")
 
 if __name__ == "__main__":
-    patch_file(STYLE_FILE, [(STYLE_OLD, STYLE_NEW)])
-    patch_file(APP_FILE, [(APP_SHEET_OLD, APP_SHEET_NEW), (APP_PRINT_OLD, APP_PRINT_NEW)])
+    patch_app_js()
+    for html_file in INDEX_FILES:
+        patch_html_file(html_file)
